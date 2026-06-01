@@ -5,7 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tannery Drum Tracker</title>
     <link rel="manifest" href="manifest.json">
+    
+    <!-- Splash Screen aur Logo Fix Tabs -->
     <meta name="theme-color" content="#2e7d32">
+    <meta name="apple-mobile-web-app-status-bar-style" content="#2e7d32">
     <link rel="icon" type="image/png" href="logo.png">
     
     <!-- PDF Libraries -->
@@ -35,18 +38,36 @@
         
         .pdf-btn { background: linear-gradient(135deg, #0288d1, #01579b); color: white; width: 100%; padding: 14px; font-size: 15px; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; margin-top: 15px; text-transform: uppercase; }
         
-        /* History Table Styling */
+        /* Table Styling */
         .history-list { margin-top: 15px; border-collapse: collapse; width: 100%; font-size: 14px; }
         .history-list th, .history-list td { border: 1px solid #ddd; padding: 10px; text-align: left; }
         .history-list th { background-color: #2e7d32; color: white; }
         .history-list tr:nth-child(even) { background-color: #f9f9f9; }
         
-        /* Action icons in table */
+        /* Action icons */
         .action-icons { display: flex; gap: 10px; font-size: 16px; cursor: pointer; }
         .edit-icon { color: #0288d1; }
         .delete-icon { color: #d32f2f; }
         
         #install-bar { display: none; background: #1b5e20; color: white; padding: 10px; text-align: center; border-radius: 8px; margin-bottom: 15px; font-weight: bold; cursor: pointer; }
+
+        /* GREEN AUTOMATIC POPUP (NO OK BUTTON) */
+        .toast-message {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #2e7d32;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 30px;
+            font-weight: 600;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            z-index: 9999;
+            display: none;
+            font-size: 15px;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -71,7 +92,6 @@
         <div id="details-screen" class="screen">
             <h2 id="selected-drum-title">Drum Details</h2>
             
-            <!-- Hidden input to keep track of editing entry ID -->
             <input type="hidden" id="editing-id" value="">
 
             <div class="form-group">
@@ -113,7 +133,7 @@
                             <th>Party</th>
                             <th>Leather</th>
                             <th>Details</th>
-                            <th class="no-pdf">Action</th> <!-- Hidden from PDF -->
+                            <th class="no-pdf">Action</th>
                         </tr>
                     </thead>
                     <tbody id="history-table-body">
@@ -124,9 +144,22 @@
         </div>
     </div>
 
+    <!-- Automatic Notification Element -->
+    <div id="toast" class="toast-message"></div>
+
     <script>
         let currentDrum = "";
         let deferredPrompt;
+
+        // Custom Notification Function (Kills Native Alert popup)
+        function showNotification(msg) {
+            let toast = document.getElementById('toast');
+            toast.innerText = msg;
+            toast.style.display = 'block';
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 2000);
+        }
 
         function setTodayDate() {
             document.getElementById('entry-date').value = new Date().toISOString().substring(0, 10);
@@ -172,13 +205,13 @@
             document.getElementById('leather-type').value = "";
             document.getElementById('billo-pani').value = "";
             document.getElementById('chemical').value = "";
-            document.getElementById('editing-id').value = ""; // Clear edit tag
+            document.getElementById('editing-id').value = "";
         }
 
         function saveDetails() {
             let selectedDate = document.getElementById('entry-date').value;
             let editingId = document.getElementById('editing-id').value;
-            let timestamp = editingId ? parseInt(editingId) : new Date().getTime(); // Use old ID if editing
+            let timestamp = editingId ? parseInt(editingId) : new Date().getTime();
 
             let drumData = {
                 id: timestamp,
@@ -190,7 +223,7 @@
             };
 
             if(!drumData.party) {
-                alert("Please Party Name laazmi likhein!");
+                showNotification("❌ Please Party Name laazmi likhein!");
                 return;
             }
 
@@ -198,18 +231,16 @@
             let fullHistory = localStorage.getItem(historyKey) ? JSON.parse(localStorage.getItem(historyKey)) : [];
             
             if (editingId) {
-                // Purani entry badlein
                 let idx = fullHistory.findIndex(item => item.id === timestamp);
                 if(idx !== -1) fullHistory[idx] = drumData;
             } else {
-                // Nayi entry add karein
                 fullHistory.push(drumData);
             }
 
             fullHistory.sort((a, b) => new Date(b.date) - new Date(a.date) || b.id - a.id);
             localStorage.setItem(historyKey, JSON.stringify(fullHistory));
 
-            alert(editingId ? "Record sahi (Update) ho gaya!" : "Naya record register mein add ho gaya!");
+            showNotification(editingId ? "✅ Record Update Ho Gaya!" : "✅ Data Register Mein Save Ho Gaya!");
             
             clearForm();
             loadHistory(currentDrum);
@@ -244,7 +275,6 @@
             });
         }
 
-        // EDIT KARNE KA FUNCTION
         function editEntry(id) {
             let historyKey = currentDrum + "_history";
             let fullHistory = JSON.parse(localStorage.getItem(historyKey));
@@ -256,23 +286,23 @@
                 document.getElementById('billo-pani').value = item.billo;
                 document.getElementById('chemical').value = item.chemical;
                 document.getElementById('entry-date').value = item.date;
-                document.getElementById('editing-id').value = item.id; // Mark as editing
+                document.getElementById('editing-id').value = item.id;
                 
-                window.scrollTo(0, 0); // Form upar le jaye
+                window.scrollTo(0, 0);
+                showNotification("✏️ Data Edit Karein");
             }
         }
 
-        // DELETE KARNE KA FUNCTION
         function deleteEntry(id) {
             if(confirm("Kya aap waqai is record ko hamesha ke liye delete karna chahte hain?")) {
                 let historyKey = currentDrum + "_history";
                 let fullHistory = JSON.parse(localStorage.getItem(historyKey));
                 
-                // Makhsoos entry filter out karein
                 fullHistory = fullHistory.filter(item => item.id !== id);
                 
                 localStorage.setItem(historyKey, JSON.stringify(fullHistory));
-                loadHistory(currentDrum); // Table refresh karein
+                loadHistory(currentDrum);
+                showNotification("❌ Record Delete Ho Gaya");
             }
         }
 
@@ -294,7 +324,6 @@
                     { header: 'Leather', dataKey: 'leather' },
                     { header: 'Details', dataKey: 'details' }
                 ],
-                // Action column ko PDF mein na shamil karein
                 didParseCell: function(data) {
                     if (data.column.index === 4) {
                         data.cell.text = '';
