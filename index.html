@@ -7,6 +7,11 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#2e7d32">
     <link rel="icon" type="image/png" href="logo.png">
+    
+    <!-- PDF Banane Wali Library (jsPDF) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background-color: #f0f2f5; padding: 15px; color: #333; }
@@ -28,15 +33,26 @@
         .save-btn { background-color: #2e7d32; color: white; box-shadow: 0 4px 6px rgba(46,125,50,0.2); }
         .back-btn { background-color: #757575; color: white; }
         
-        /* Install Button Styling */
+        /* PDF Button Styling */
+        .pdf-btn { background: linear-gradient(135deg, #0288d1, #01579b); color: white; width: 100%; padding: 14px; font-size: 15px; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; margin-top: 15px; text-transform: uppercase; box-shadow: 0 4px 6px rgba(2,136,209,0.2); }
+        .pdf-btn:active { background: #01579b; }
+
+        /* History Table Styling */
+        .history-list { margin-top: 15px; border-collapse: collapse; width: 100%; font-size: 14px; }
+        .history-list th, .history-list td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        .history-list th { background-color: #2e7d32; color: white; }
+        .history-list tr:nth-child(even) { background-color: #f9f9f9; }
+        
         #install-bar { display: none; background: #1b5e20; color: white; padding: 10px; text-align: center; border-radius: 8px; margin-bottom: 15px; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body>
 
     <div class="container">
+        <!-- Install Prompt Bar -->
         <div id="install-bar" onclick="installApp()">📲 Click Karein Aur App Install Karein!</div>
 
+        <!-- FIRST WINDOW: DRUM LIST -->
         <div id="dashboard" class="screen active">
             <h2>Tannery Drums</h2>
             <div class="grid-container">
@@ -49,15 +65,16 @@
             </div>
         </div>
 
+        <!-- SECOND WINDOW: DRUM DETAILS & HISTORY -->
         <div id="details-screen" class="screen">
             <h2 id="selected-drum-title">Drum Details</h2>
             <div class="form-group">
-                <label>Party Name:</label>
+                <label>Party Name / Party Ka Naam:</label>
                 <input type="text" id="party-name" placeholder="Party name likhein">
             </div>
             <div class="form-group">
-                <label>Leather Type:</label>
-                <input type="text" id="leather-type" placeholder="e.g. Cow Hide, Goat Skin">
+                <label>Leather Type / Chamray Ki Qisam:</label>
+                <input type="text" id="leather-type" placeholder="e.g. Cow Hide, Pith">
             </div>
             <div class="form-group">
                 <label>Billo Pani (Water Amount):</label>
@@ -75,6 +92,30 @@
                 <button class="action-btn back-btn" onclick="goBack()">Wapas</button>
                 <button class="action-btn save-btn" onclick="saveDetails()">Save Karein</button>
             </div>
+
+            <hr style="margin-top: 30px; border: 0; border-top: 1px solid #ccc;">
+            
+            <!-- HISTORY SECTION -->
+            <h3 style="margin-top: 20px; color: #1b5e20;">Drum Job History</h3>
+            
+            <!-- PDF Download Button -->
+            <button class="pdf-btn" onclick="downloadPDF()">📄 Download PDF History</button>
+
+            <div style="overflow-x: auto;">
+                <table class="history-list" id="pdf-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Party</th>
+                            <th>Leather</th>
+                            <th>Details</th>
+                        </tr>
+                    </thead>
+                    <tbody id="history-table-body">
+                        <!-- History rows will come here dynamically -->
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 
@@ -82,16 +123,14 @@
         let currentDrum = "";
         let deferredPrompt;
 
-        // Auto-set today's date
-        document.getElementById('entry-date').value = new Date().toISOString().substring(0, 10);
-
-        // Register Service Worker
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js')
-            .then(() => console.log("Service Worker Registered"));
+        function setTodayDate() {
+            document.getElementById('entry-date').value = new Date().toISOString().substring(0, 10);
         }
 
-        // Capture Install Event
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js').then(() => console.log("Service Worker Registered"));
+        }
+
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredPrompt = e;
@@ -113,37 +152,96 @@
         function openDetails(drumName) {
             currentDrum = drumName;
             document.getElementById('selected-drum-title').innerText = drumName;
-            let savedData = localStorage.getItem(currentDrum);
-            if (savedData) {
-                let data = JSON.parse(savedData);
-                document.getElementById('party-name').value = data.party || "";
-                document.getElementById('leather-type').value = data.leather || "";
-                document.getElementById('billo-pani').value = data.billo || "";
-                document.getElementById('chemical').value = data.chemical || "";
-                document.getElementById('entry-date').value = data.date || new Date().toISOString().substring(0, 10);
-            } else {
-                document.getElementById('party-name').value = "";
-                document.getElementById('leather-type').value = "";
-                document.getElementById('billo-pani').value = "";
-                document.getElementById('chemical').value = "";
-                document.getElementById('entry-date').value = new Date().toISOString().substring(0, 10);
-            }
+            
+            setTodayDate();
+            document.getElementById('party-name').value = "";
+            document.getElementById('leather-type').value = "";
+            document.getElementById('billo-pani').value = "";
+            document.getElementById('chemical').value = "";
+
+            loadHistory(drumName);
+
             document.getElementById('dashboard').classList.remove('active');
             document.getElementById('details-screen').classList.add('active');
             window.scrollTo(0, 0);
         }
 
         function saveDetails() {
+            let selectedDate = document.getElementById('entry-date').value;
+            let timestamp = new Date().getTime();
+
             let drumData = {
+                id: timestamp,
                 party: document.getElementById('party-name').value,
                 leather: document.getElementById('leather-type').value,
                 billo: document.getElementById('billo-pani').value,
                 chemical: document.getElementById('chemical').value,
-                date: document.getElementById('entry-date').value
+                date: selectedDate
             };
-            localStorage.setItem(currentDrum, JSON.stringify(drumData));
-            alert(currentDrum + " ka data save ho gaya!");
+
+            if(!drumData.party) {
+                alert("Please Party Name laazmi likhein!");
+                return;
+            }
+
+            let historyKey = currentDrum + "_history";
+            let fullHistory = localStorage.getItem(historyKey) ? JSON.parse(localStorage.getItem(historyKey)) : [];
+            
+            fullHistory.push(drumData);
+            fullHistory.sort((a, b) => new Date(b.date) - new Date(a.date) || b.id - a.id);
+            localStorage.setItem(historyKey, JSON.stringify(fullHistory));
+
+            alert(currentDrum + " ka data register mein add ho gaya!");
             goBack();
+        }
+
+        function loadHistory(drumName) {
+            let historyKey = drumName + "_history";
+            let fullHistory = localStorage.getItem(historyKey) ? JSON.parse(localStorage.getItem(historyKey)) : [];
+            let tableBody = document.getElementById('history-table-body');
+            
+            tableBody.innerHTML = "";
+
+            if(fullHistory.length === 0) {
+                tableBody.innerHTML = "<tr><td colspan='4' style='text-align:center; color:#999;'>Koi pichla record maujood nahi hai.</td></tr>";
+                return;
+            }
+
+            fullHistory.forEach(item => {
+                let row = `<tr>
+                    <td><b>${item.date}</b></td>
+                    <td>${item.party}</td>
+                    <td>${item.leather}</td>
+                    <td>${item.chemical} (Billo: ${item.billo})</td>
+                </tr>`;
+                tableBody.innerHTML += row;
+            });
+        }
+
+        // PDF GENERATE KARNE KA FUNCTION
+        function downloadPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            // PDF Ka Title/Header
+            doc.setFontSize(18);
+            doc.text(`Tannery Job Register - ${currentDrum}`, 14, 20);
+            
+            doc.setFontSize(10);
+            doc.text(`Generated Date: ${new Date().toLocaleDateString()}`, 14, 28);
+
+            // Table ko PDF mein convert karna
+            doc.autoTable({
+                html: '#pdf-table',
+                startY: 35,
+                theme: 'grid',
+                headStyles: { fillColor: [46, 125, 50] }, // Green header
+                styles: { fontSize: 10, cellPadding: 4 },
+                columnStyles: { 0: { cellWidth: 30 } } // Date column width
+            });
+
+            // File Download Name
+            doc.save(`${currentDrum.replace(/\s+/g, '_')}_History.pdf`);
         }
 
         function goBack() {
