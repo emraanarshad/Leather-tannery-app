@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tannery Drum Tracker</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2e7d32">
+    <link rel="icon" type="image/png" href="logo.png">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f0f2f5; padding: 15px; color: #333; }
+        .container { max-width: 500px; margin: 0 auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        h2 { text-align: center; margin-bottom: 25px; color: #1b5e20; font-size: 22px; text-transform: uppercase; letter-spacing: 1px; }
+        .screen { display: none; }
+        .active { display: block; }
+        .grid-container { display: grid; grid-template-columns: 1fr; gap: 14px; }
+        .drum-btn { background: linear-gradient(135deg, #4caf50, #2e7d32); color: white; border: none; padding: 20px; font-size: 18px; font-weight: bold; border-radius: 10px; cursor: pointer; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.1s, background 0.2s; }
+        .drum-btn:active { transform: scale(0.98); background: #1b5e20; }
+        .outside-btn { background: linear-gradient(135deg, #ff9800, #e65100); }
+        .outside-btn:active { background: #e65100; }
+        .form-group { margin-bottom: 18px; }
+        label { display: block; font-weight: 600; margin-bottom: 6px; font-size: 15px; color: #444; }
+        input { width: 100%; padding: 14px; border: 1px solid #ccc; border-radius: 8px; font-size: 16px; background-color: #fafafa; }
+        input:focus { border-color: #4caf50; outline: none; background-color: #fff; }
+        .btn-container { display: flex; gap: 12px; margin-top: 25px; }
+        .action-btn { flex: 1; padding: 16px; font-size: 16px; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; text-transform: uppercase; }
+        .save-btn { background-color: #2e7d32; color: white; box-shadow: 0 4px 6px rgba(46,125,50,0.2); }
+        .back-btn { background-color: #757575; color: white; }
+        
+        /* Install Button Styling */
+        #install-bar { display: none; background: #1b5e20; color: white; padding: 10px; text-align: center; border-radius: 8px; margin-bottom: 15px; font-weight: bold; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div id="install-bar" onclick="installApp()">📲 Click Karein Aur App Install Karein!</div>
+
+        <div id="dashboard" class="screen active">
+            <h2>Tannery Drums</h2>
+            <div class="grid-container">
+                <button class="drum-btn" onclick="openDetails('Drum 1 M')">Drum 1 M</button>
+                <button class="drum-btn" onclick="openDetails('Drum 2 M')">Drum 2 M</button>
+                <button class="drum-btn" onclick="openDetails('Drum 3 M')">Drum 3 M</button>
+                <button class="drum-btn" onclick="openDetails('Drum 4 L')">Drum 4 L (Large)</button>
+                <button class="drum-btn" onclick="openDetails('Drum 5 L')">Drum 5 L (Large)</button>
+                <button class="drum-btn outside-btn" onclick="openDetails('Drum 6 Outside')">Drum 6 Outside</button>
+            </div>
+        </div>
+
+        <div id="details-screen" class="screen">
+            <h2 id="selected-drum-title">Drum Details</h2>
+            <div class="form-group">
+                <label>Party Name:</label>
+                <input type="text" id="party-name" placeholder="Party name likhein">
+            </div>
+            <div class="form-group">
+                <label>Leather Type:</label>
+                <input type="text" id="leather-type" placeholder="e.g. Cow Hide, Goat Skin">
+            </div>
+            <div class="form-group">
+                <label>Billo Pani (Water Amount):</label>
+                <input type="text" id="billo-pani" placeholder="Pani ki miqdar">
+            </div>
+            <div class="form-group">
+                <label>Extra Chemical Details:</label>
+                <input type="text" id="chemical" placeholder="Chemicals ki detail">
+            </div>
+            <div class="form-group">
+                <label>Date / Tareekh:</label>
+                <input type="date" id="entry-date">
+            </div>
+            <div class="btn-container">
+                <button class="action-btn back-btn" onclick="goBack()">Wapas</button>
+                <button class="action-btn save-btn" onclick="saveDetails()">Save Karein</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentDrum = "";
+        let deferredPrompt;
+
+        // Auto-set today's date
+        document.getElementById('entry-date').value = new Date().toISOString().substring(0, 10);
+
+        // Register Service Worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js')
+            .then(() => console.log("Service Worker Registered"));
+        }
+
+        // Capture Install Event
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            document.getElementById('install-bar').style.display = 'block';
+        });
+
+        function installApp() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        document.getElementById('install-bar').style.display = 'none';
+                    }
+                    deferredPrompt = null;
+                });
+            }
+        }
+
+        function openDetails(drumName) {
+            currentDrum = drumName;
+            document.getElementById('selected-drum-title').innerText = drumName;
+            let savedData = localStorage.getItem(currentDrum);
+            if (savedData) {
+                let data = JSON.parse(savedData);
+                document.getElementById('party-name').value = data.party || "";
+                document.getElementById('leather-type').value = data.leather || "";
+                document.getElementById('billo-pani').value = data.billo || "";
+                document.getElementById('chemical').value = data.chemical || "";
+                document.getElementById('entry-date').value = data.date || new Date().toISOString().substring(0, 10);
+            } else {
+                document.getElementById('party-name').value = "";
+                document.getElementById('leather-type').value = "";
+                document.getElementById('billo-pani').value = "";
+                document.getElementById('chemical').value = "";
+                document.getElementById('entry-date').value = new Date().toISOString().substring(0, 10);
+            }
+            document.getElementById('dashboard').classList.remove('active');
+            document.getElementById('details-screen').classList.add('active');
+            window.scrollTo(0, 0);
+        }
+
+        function saveDetails() {
+            let drumData = {
+                party: document.getElementById('party-name').value,
+                leather: document.getElementById('leather-type').value,
+                billo: document.getElementById('billo-pani').value,
+                chemical: document.getElementById('chemical').value,
+                date: document.getElementById('entry-date').value
+            };
+            localStorage.setItem(currentDrum, JSON.stringify(drumData));
+            alert(currentDrum + " ka data save ho gaya!");
+            goBack();
+        }
+
+        function goBack() {
+            document.getElementById('details-screen').classList.remove('active');
+            document.getElementById('dashboard').classList.add('active');
+            window.scrollTo(0, 0);
+        }
+    </script>
+</body>
+</html>
