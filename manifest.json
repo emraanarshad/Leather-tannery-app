@@ -1,6 +1,7 @@
 {
   "name": "Tannery Drum Tracker",
   "short_name": "Tannery App",
+  "description": "Leather Tannery Drum Job Work Tracker",
   "start_url": "index.html",
   "display": "standalone",
   "background_color": "#f0f2f5",
@@ -9,8 +10,15 @@
   "icons": [
     {
       "src": "logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "logo.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }
