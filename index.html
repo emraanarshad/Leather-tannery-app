@@ -74,8 +74,8 @@
         }
         .drum-btn {
             width: 100%;
-            padding: 20px;
-            font-size: 1.3rem;
+            padding: 22px;
+            font-size: 1.4rem;
             font-weight: bold;
             color: white;
             background: linear-gradient(135deg, #4caf50, #2e7d32);
@@ -91,10 +91,12 @@
         .drum-btn.has-load {
             background: linear-gradient(135deg, #00bcd4, #0097a7) !important;
         }
+        
+        /* ACTIONS & BUTTONS */
         .form-actions {
             display: flex;
-            gap: 15px;
-            margin-top: 20px;
+            gap: 12px;
+            margin-top: 15px;
         }
         .back-btn {
             background: #757575;
@@ -119,6 +121,46 @@
             font-size: 1.1rem;
             cursor: pointer;
         }
+        
+        /* TWO SEPARATE ACTIONS SIDE BY SIDE */
+        .edit-action-group {
+            display: flex;
+            gap: 12px;
+            margin: 15px 0;
+            border-top: 1px dashed #ccc;
+            padding-top: 15px;
+        }
+        .btn-action-edit {
+            flex: 1;
+            background-color: #d2e3fc;
+            color: #1a73e8;
+            border: 1px solid #1a73e8;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .btn-action-clear {
+            flex: 1;
+            background-color: #fce8e6;
+            color: #d93025;
+            border: 1px solid #d93025;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
         label {
             display: block;
             margin: 12px 0 4px;
@@ -138,7 +180,7 @@
         }
         
         .history-section {
-            margin-top: 35px;
+            margin-top: 25px;
             border-top: 1px solid #e0e0e0;
             padding-top: 20px;
         }
@@ -186,25 +228,6 @@
             color: #333;
             background-color: #fff;
         }
-        
-        .floating-edit-btn {
-            position: fixed;
-            width: 55px;
-            height: 55px;
-            bottom: 30px;
-            right: 30px;
-            background-color: #d2e3fc;
-            color: #1a73e8;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-            cursor: pointer;
-            z-index: 99;
-            border: none;
-        }
 
         #toast {
             visibility: hidden;
@@ -232,7 +255,6 @@
     <div id="screen-main" class="screen active">
         <div class="header">Tannery Drums</div>
         
-        <!-- Naya Report Filter Card -->
         <div class="report-card">
             <strong style="color:#1b5e20; display:block; margin-bottom:8px;"><i class="fa-solid fa-chart-simple"></i> Party Drum Usage Report:</strong>
             <div class="report-grid">
@@ -248,12 +270,12 @@
         </div>
 
         <div class="drum-list">
-            <button class="drum-btn" id="btn-Drum 1 M" onclick="openDrumWindow('Drum 1 M')">Drum 1 M <div id="lbl-Drum 1 M" style="font-size:0.9rem; font-weight:normal;"></div></button>
-            <button class="drum-btn" id="btn-Drum 2 M" onclick="openDrumWindow('Drum 2 M')">Drum 2 M <div id="lbl-Drum 2 M" style="font-size:0.9rem; font-weight:normal;"></div></button>
-            <button class="drum-btn" id="btn-Drum 3 M" onclick="openDrumWindow('Drum 3 M')">Drum 3 M <div id="lbl-Drum 3 M" style="font-size:0.9rem; font-weight:normal;"></div></button>
-            <button class="drum-btn" id="btn-Drum 4 L" onclick="openDrumWindow('Drum 4 L')">Drum 4 L (Large) <div id="lbl-Drum 4 L" style="font-size:0.9rem; font-weight:normal;"></div></button>
-            <button class="drum-btn" id="btn-Drum 5 L" onclick="openDrumWindow('Drum 5 L')">Drum 5 L (Large) <div id="lbl-Drum 5 L" style="font-size:0.9rem; font-weight:normal;"></div></button>
-            <button class="drum-btn outside" id="btn-Drum 6 Outside" onclick="openDrumWindow('Drum 6 Outside')">Drum 6 Outside <div id="lbl-Drum 6 Outside" style="font-size:0.9rem; font-weight:normal;"></div></button>
+            <button class="drum-btn" id="btn-Drum 1 M" onclick="openDrumWindow('Drum 1 M')">Drum 1 M</button>
+            <button class="drum-btn" id="btn-Drum 2 M" onclick="openDrumWindow('Drum 2 M')">Drum 2 M</button>
+            <button class="drum-btn" id="btn-Drum 3 M" onclick="openDrumWindow('Drum 3 M')">Drum 3 M</button>
+            <button class="drum-btn" id="btn-Drum 4 L" onclick="openDrumWindow('Drum 4 L')">Drum 4 L (Large)</button>
+            <button class="drum-btn" id="btn-Drum 5 L" onclick="openDrumWindow('Drum 5 L')">Drum 5 L (Large)</button>
+            <button class="drum-btn outside" id="btn-Drum 6 Outside" onclick="openDrumWindow('Drum 6 Outside')">Drum 6 Outside</button>
         </div>
     </div>
 
@@ -261,6 +283,16 @@
     <div id="screen-entry" class="screen">
         <div class="header" id="entry-header">Drum Details</div>
         
+        <!-- TWO ACTION BUTTONS SIDE BY SIDE FOR QUICK EDIT / CLEAR -->
+        <div class="edit-action-group">
+            <button type="button" class="btn-action-edit" onclick="activateEditMode()">
+                <i class="fa-solid fa-pen-to-square"></i> Edit Current Load
+            </button>
+            <button type="button" class="btn-action-clear" onclick="clearFormFields()">
+                <i class="fa-solid fa-eraser"></i> Clear Form
+            </button>
+        </div>
+
         <form id="drumForm" onsubmit="saveToSheet(event)">
             <label>Party Name / Party Ka Naam:</label>
             <input type="text" id="inpParty" placeholder="Party name likhein" required>
@@ -287,7 +319,7 @@
 
         <div class="history-section">
             <div class="history-title">Drum Job History</div>
-            <button class="btn-pdf" type="button" onclick="showPopup('PDF Feature Comming Soon')">
+            <button class="btn-pdf" type="button" onclick="showPopup('PDF Feature Coming Soon')">
                 <i class="fa-solid fa-file-pdf"></i> Download PDF History
             </button>
             
@@ -305,10 +337,6 @@
                 </table>
             </div>
         </div>
-
-        <button class="floating-edit-btn" onclick="activateEditMode()" title="Edit Active Load">
-            <i class="fa-solid fa-pen"></i>
-        </button>
     </div>
 
     <div id="toast">Loading...</div>
@@ -371,19 +399,15 @@
             const list = ['Drum 1 M', 'Drum 2 M', 'Drum 3 M', 'Drum 4 L', 'Drum 5 L', 'Drum 6 Outside'];
             list.forEach(d => {
                 let btn = document.getElementById(`btn-${d}`);
-                let lbl = document.getElementById(`lbl-${d}`);
-                if(btn && lbl) {
+                if(btn) {
                     btn.classList.remove('has-load');
-                    lbl.innerText = "Khali (Empty)";
                 }
             });
 
             sheetRecords.forEach(r => {
                 let btn = document.getElementById(`btn-${r.drum}`);
-                let lbl = document.getElementById(`lbl-${r.drum}`);
-                if(btn && lbl) {
+                if(btn) {
                     btn.classList.add('has-load');
-                    lbl.innerText = `Maal: ${r.party} (${r.leather})`;
                 }
             });
         }
@@ -429,19 +453,23 @@
             else showPopup("Is drum me koi active load nahi hai.");
         }
 
-        function openDrumWindow(drumName) {
-            selectedDrum = drumName;
-            document.getElementById('entry-header').innerText = drumName;
-            document.getElementById('screen-main').classList.remove('active');
-            document.getElementById('screen-entry').classList.add('active');
-
+        function clearFormFields() {
             document.getElementById('inpId').value = "";
             document.getElementById('inpLeather').value = "";
             document.getElementById('inpWater').value = "";
             document.getElementById('inpDetails').value = "";
             document.getElementById('inpParty').value = "";
             document.getElementById('inpDate').valueAsDate = new Date();
+            showPopup("Form Clear ho gaya!");
+        }
 
+        function openDrumWindow(drumName) {
+            selectedDrum = drumName;
+            document.getElementById('entry-header').innerText = drumName;
+            document.getElementById('screen-main').classList.remove('active');
+            document.getElementById('screen-entry').classList.add('active');
+
+            clearFormFields();
             buildHistoryTable(drumName);
         }
 
