@@ -6,6 +6,7 @@
     <title>Tannery Drums</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#2e7d32">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
@@ -17,13 +18,13 @@
             text-align: center;
             color: #1b5e20;
             font-size: 1.6rem;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
             font-weight: bold;
             text-transform: uppercase;
         }
         .screen {
             display: none;
-            max-width: 500px;
+            max-width: 600px;
             margin: 0 auto;
             background: white;
             border-radius: 15px;
@@ -34,6 +35,38 @@
         .screen.active {
             display: block;
         }
+        
+        /* REPORT BOX STYLES */
+        .report-card {
+            background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border: 1px solid #a5d6a7;
+        }
+        .report-grid {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .report-grid select, .report-grid input {
+            flex: 1;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #999;
+            font-size: 0.95rem;
+        }
+        .report-result {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #1b5e20;
+            text-align: center;
+            margin-top: 5px;
+            background: white;
+            padding: 8px;
+            border-radius: 6px;
+        }
+
         .drum-list {
             display: flex;
             flex-direction: column;
@@ -58,30 +91,22 @@
         .drum-btn.has-load {
             background: linear-gradient(135deg, #00bcd4, #0097a7) !important;
         }
+        .form-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
         .back-btn {
-            background: #555555;
+            background: #757575;
             color: white;
-            padding: 10px 15px;
+            padding: 14px;
             border: none;
-            border-radius: 6px;
+            border-radius: 8px;
             font-weight: bold;
             cursor: pointer;
-            margin-bottom: 20px;
-        }
-        label {
-            display: block;
-            margin: 12px 0 4px;
-            font-weight: bold;
-            font-size: 0.9rem;
-        }
-        input, textarea {
-            width: 100%;
-            padding: 11px;
-            border: 1px solid #cccccc;
-            border-radius: 6px;
-            box-sizing: border-box;
-            font-size: 1rem;
-            margin-bottom: 10px;
+            flex: 1;
+            font-size: 1.1rem;
+            text-align: center;
         }
         .btn-save {
             background: #2e7d32;
@@ -89,19 +114,98 @@
             font-weight: bold;
             border: none;
             padding: 14px;
-            width: 100%;
-            border-radius: 6px;
+            flex: 1;
+            border-radius: 8px;
             font-size: 1.1rem;
             cursor: pointer;
         }
-        .details-box {
-            background: #eef2f3;
+        label {
+            display: block;
+            margin: 12px 0 4px;
+            font-weight: bold;
+            font-size: 0.95rem;
+            color: #333;
+        }
+        input, textarea, select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #cccccc;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 1rem;
+            margin-bottom: 10px;
+            background-color: #fafafa;
+        }
+        
+        .history-section {
+            margin-top: 35px;
+            border-top: 1px solid #e0e0e0;
+            padding-top: 20px;
+        }
+        .history-title {
+            font-size: 1.4rem;
+            color: #1b5e20;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        .btn-pdf {
+            background: #0288d1;
+            color: white;
+            border: none;
+            width: 100%;
             padding: 12px;
             border-radius: 8px;
-            margin-top: 15px;
-            border-left: 5px solid #2e7d32;
+            font-size: 1rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .table-responsive {
+            overflow-x: auto;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
             font-size: 0.95rem;
         }
+        th {
+            background-color: #2e7d32;
+            color: white;
+            padding: 12px 10px;
+            font-weight: bold;
+        }
+        td {
+            padding: 12px 10px;
+            border-bottom: 1px solid #e0e0e0;
+            color: #333;
+            background-color: #fff;
+        }
+        
+        .floating-edit-btn {
+            position: fixed;
+            width: 55px;
+            height: 55px;
+            bottom: 30px;
+            right: 30px;
+            background-color: #d2e3fc;
+            color: #1a73e8;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            cursor: pointer;
+            z-index: 99;
+            border: none;
+        }
+
         #toast {
             visibility: hidden;
             min-width: 250px;
@@ -111,7 +215,7 @@
             border-radius: 6px;
             padding: 16px;
             position: fixed;
-            z-index: 10;
+            z-index: 100;
             left: 50%;
             bottom: 30px;
             transform: translateX(-50%);
@@ -124,9 +228,25 @@
 </head>
 <body>
 
-    <!-- SCREEN 1: MAIN DRUMS WINDOW -->
+    <!-- SCREEN 1: MAIN DRUMS WINDOW + PARTY SEARCH -->
     <div id="screen-main" class="screen active">
         <div class="header">Tannery Drums</div>
+        
+        <!-- Naya Report Filter Card -->
+        <div class="report-card">
+            <strong style="color:#1b5e20; display:block; margin-bottom:8px;"><i class="fa-solid fa-chart-simple"></i> Party Drum Usage Report:</strong>
+            <div class="report-grid">
+                <input type="text" id="searchPartyName" placeholder="Party Ka Naam Likhein" oninput="calculatePartyReport()">
+                <select id="searchDaysLimit" onchange="calculatePartyReport()">
+                    <option value="7">Last 7 Din</option>
+                    <option value="15">Last 15 Din</option>
+                    <option value="30">Last 30 Din</option>
+                    <option value="all" selected>Kul Record (All)</option>
+                </select>
+            </div>
+            <div class="report-result" id="reportResultText">Party naam likh kar check karein</div>
+        </div>
+
         <div class="drum-list">
             <button class="drum-btn" id="btn-Drum 1 M" onclick="openDrumWindow('Drum 1 M')">Drum 1 M <div id="lbl-Drum 1 M" style="font-size:0.9rem; font-weight:normal;"></div></button>
             <button class="drum-btn" id="btn-Drum 2 M" onclick="openDrumWindow('Drum 2 M')">Drum 2 M <div id="lbl-Drum 2 M" style="font-size:0.9rem; font-weight:normal;"></div></button>
@@ -137,41 +257,63 @@
         </div>
     </div>
 
-    <!-- SCREEN 2: ENTRY & DETAILS WINDOW -->
+    <!-- SCREEN 2: ENTRY, DETAILS & HISTORY WINDOW -->
     <div id="screen-entry" class="screen">
-        <button class="back-btn" onclick="showMainScreen()">← Wapis (Back)</button>
         <div class="header" id="entry-header">Drum Details</div>
         
         <form id="drumForm" onsubmit="saveToSheet(event)">
-            <label>Tareekh (Date):</label>
+            <label>Party Name / Party Ka Naam:</label>
+            <input type="text" id="inpParty" placeholder="Party name likhein" required>
+
+            <label>Leather Type / Chamray Ki Qisam:</label>
+            <input type="text" id="inpLeather" placeholder="e.g. Cow Hide, Pith" required>
+
+            <label>Billo Pani (Water Amount):</label>
+            <input type="text" id="inpWater" placeholder="Pani ki miqdar">
+
+            <label>Extra Chemical Details:</label>
+            <textarea id="inpDetails" rows="3" placeholder="Chemicals ki detail"></textarea>
+
+            <label>Date / Tareekh:</label>
             <input type="date" id="inpDate" required>
+            
+            <input type="hidden" id="inpId">
 
-            <label>Party Ka Naam:</label>
-            <input type="text" id="inpParty" placeholder="Party ka naam" required>
-
-            <label>Chumra / Maal Type:</label>
-            <input type="text" id="inpLeather" placeholder="e.g. Cow/Buffalo" required>
-
-            <label>Pani Ki Miqdar (Water Level):</label>
-            <input type="text" id="inpWater" placeholder="e.g. Billo Pani, 1/2 Pani">
-
-            <label>Chemicals / Details:</label>
-            <textarea id="inpDetails" rows="4" placeholder="Chemicals ki tafseel..."></textarea>
-
-            <button type="submit" class="btn-save">Data Save Karein</button>
+            <div class="form-actions">
+                <button type="button" class="back-btn" onclick="showMainScreen()">Wapas</button>
+                <button type="submit" class="btn-save">Save Karein</button>
+            </div>
         </form>
 
-        <!-- Current Active Live Details Display Below Form -->
-        <div id="liveDetailsDisplay" class="details-box" style="display:none;">
-            <strong>Is Drum Ka Mojooda Maal:</strong><br>
-            <span id="txtLiveDetails"></span>
+        <div class="history-section">
+            <div class="history-title">Drum Job History</div>
+            <button class="btn-pdf" type="button" onclick="showPopup('PDF Feature Comming Soon')">
+                <i class="fa-solid fa-file-pdf"></i> Download PDF History
+            </button>
+            
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Party</th>
+                            <th>Leather</th>
+                            <th>Details</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historyTableBody"></tbody>
+                </table>
+            </div>
         </div>
+
+        <button class="floating-edit-btn" onclick="activateEditMode()" title="Edit Active Load">
+            <i class="fa-solid fa-pen"></i>
+        </button>
     </div>
 
     <div id="toast">Loading...</div>
 
     <script>
-        // AAPKA NYA LIVE ACTIVE LINK YAHAAN CHAL RAHA HAI
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbybajeiYGRFnM4bpEhe3Nds0VyhFZ0l7Jk19LY-CI8VTuyeqNiEhZ7zOtYqIQ9I30ifkw/exec";
         let selectedDrum = "";
         let sheetRecords = [];
@@ -185,8 +327,44 @@
                 if(json.status === "success") {
                     sheetRecords = json.data;
                     updateMainButtons();
+                    calculatePartyReport();
+                    if(document.getElementById('screen-entry').classList.contains('active')) {
+                        buildHistoryTable(selectedDrum);
+                    }
                 }
             } catch(e) { console.log("Load Error", e); }
+        }
+
+        function calculatePartyReport() {
+            let searchName = document.getElementById('searchPartyName').value.trim().toLowerCase();
+            let daysLimit = document.getElementById('searchDaysLimit').value;
+            let resultBox = document.getElementById('reportResultText');
+
+            if(!searchName) {
+                resultBox.innerText = "Party naam likh kar check karein";
+                return;
+            }
+
+            let count = 0;
+            let now = new Date();
+
+            sheetRecords.forEach(r => {
+                if(r.party && r.party.toLowerCase().includes(searchName)) {
+                    if(daysLimit === "all") {
+                        count++;
+                    } else {
+                        let recordDate = new Date(r.date);
+                        let diffTime = Math.abs(now - recordDate);
+                        let diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                        if(diffDays <= parseInt(daysLimit)) {
+                            count++;
+                        }
+                    }
+                }
+            });
+
+            let daysText = daysLimit === "all" ? "Kul Arsay" : `${daysLimit} Dinon`;
+            resultBox.innerHTML = `Is Party ne <u>${daysText}</u> mein <strong>${count} Drums</strong> use kiye hain.`;
         }
 
         function updateMainButtons() {
@@ -210,51 +388,73 @@
             });
         }
 
+        function buildHistoryTable(drumName) {
+            const tbody = document.getElementById('historyTableBody');
+            tbody.innerHTML = "";
+            let filtered = sheetRecords.filter(r => r.drum === drumName);
+            
+            if(filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#999;">No History Available</td></tr>`;
+                return;
+            }
+
+            filtered.forEach(r => {
+                let cleanDate = r.date ? r.date.split('T')[0] : '';
+                let tr = document.createElement('tr');
+                tr.style.cursor = "pointer";
+                tr.onclick = () => populateForm(r);
+                tr.innerHTML = `
+                    <td><strong>${cleanDate}</strong></td>
+                    <td>${r.party || ''}</td>
+                    <td>${r.leather || ''}</td>
+                    <td>${r.details || ''} ${r.water ? '(Billo: ' + r.water + ')' : ''}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function populateForm(record) {
+            document.getElementById('inpId').value = record.id || '';
+            document.getElementById('inpDate').value = record.date ? record.date.split('T')[0] : '';
+            document.getElementById('inpParty').value = record.party || '';
+            document.getElementById('inpLeather').value = record.leather || '';
+            document.getElementById('inpWater').value = record.water || '';
+            document.getElementById('inpDetails').value = record.details || '';
+            showPopup("Job loaded to Edit!");
+        }
+
+        function activateEditMode() {
+            let match = sheetRecords.find(r => r.drum === selectedDrum);
+            if(match) populateForm(match);
+            else showPopup("Is drum me koi active load nahi hai.");
+        }
+
         function openDrumWindow(drumName) {
             selectedDrum = drumName;
             document.getElementById('entry-header').innerText = drumName;
-            
             document.getElementById('screen-main').classList.remove('active');
             document.getElementById('screen-entry').classList.add('active');
 
-            let match = sheetRecords.find(r => r.drum === drumName);
-            let displayBox = document.getElementById('liveDetailsDisplay');
-            
-            if(match) {
-                document.getElementById('inpDate').value = match.date ? match.date.split('T')[0] : '';
-                document.getElementById('inpParty').value = match.party || '';
-                document.getElementById('inpLeather').value = match.leather || '';
-                document.getElementById('inpWater').value = match.water || '';
-                document.getElementById('inpDetails').value = match.details || '';
-                
-                document.getElementById('txtLiveDetails').innerHTML = `
-                    <strong>Tareekh:</strong> ${match.date ? match.date.split('T')[0] : ''}<br>
-                    <strong>Party:</strong> ${match.party || ''}<br>
-                    <strong>Maal:</strong> ${match.leather || ''}<br>
-                    <strong>Pani:</strong> ${match.water || 'Nahi likha'}<br>
-                    <strong>Chemicals:</strong> ${match.details || ''}
-                `;
-                displayBox.style.display = "block";
-            } else {
-                document.getElementById('inpParty').value = "";
-                document.getElementById('inpLeather').value = "";
-                document.getElementById('inpWater').value = "";
-                document.getElementById('inpDetails').value = "";
-                document.getElementById('inpDate').valueAsDate = new Date();
-                displayBox.style.display = "none";
-            }
+            document.getElementById('inpId').value = "";
+            document.getElementById('inpLeather').value = "";
+            document.getElementById('inpWater').value = "";
+            document.getElementById('inpDetails').value = "";
+            document.getElementById('inpParty').value = "";
+            document.getElementById('inpDate').valueAsDate = new Date();
+
+            buildHistoryTable(drumName);
         }
 
         function showMainScreen() {
             document.getElementById('screen-entry').classList.remove('active');
             document.getElementById('screen-main').classList.add('active');
+            calculatePartyReport();
         }
 
         async function saveToSheet(e) {
             e.preventDefault();
-            
-            let existing = sheetRecords.find(r => r.drum === selectedDrum);
-            let rowId = existing ? existing.id.toString() : new Date().getTime().toString();
+            let formId = document.getElementById('inpId').value;
+            let rowId = formId ? formId : new Date().getTime().toString();
 
             let payload = {
                 action: "save",
@@ -277,12 +477,11 @@
                     body: JSON.stringify(payload)
                 });
                 
-                showPopup("Data successfully Sheet me chalagya!");
+                showPopup("Data successfully Saved!");
                 setTimeout(() => {
                     loadSheetData();
                     showMainScreen();
                 }, 1200);
-                
             } catch(err) {
                 showPopup("Net slow hai, dobara save dabayein.");
             }
