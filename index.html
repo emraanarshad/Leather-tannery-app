@@ -6,7 +6,11 @@
     <title>Tannery Drums</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#2e7d32">
+    <!-- FontAwesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- html2pdf Library for Downloading PDF History -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
@@ -192,7 +196,7 @@
             vertical-align: middle;
         }
         
-        /* TWO SEPARATE ACTION BUTTONS IN ROW */
+        /* ACTION CELL - PEN & DELETE BUTTONS */
         .action-cell {
             display: flex;
             gap: 8px;
@@ -202,21 +206,21 @@
             background-color: #ffca28; /* Golden Yellow */
             color: #000;
             border: none;
-            padding: 6px 10px;
+            padding: 8px 12px;
             border-radius: 6px;
             cursor: pointer;
-            font-size: 0.9rem;
+            font-size: 0.95rem;
         }
-        .btn-row-view {
-            background-color: #e0e0e0; /* Neutral Light Gray */
-            color: #333;
+        .btn-row-delete {
+            background-color: #e53935; /* Alert Red */
+            color: white;
             border: none;
-            padding: 6px 10px;
+            padding: 8px 12px;
             border-radius: 6px;
             cursor: pointer;
-            font-size: 0.9rem;
+            font-size: 0.95rem;
         }
-        .btn-row-edit:active, .btn-row-view:active {
+        .btn-row-edit:active, .btn-row-delete:active {
             transform: scale(0.9);
         }
 
@@ -298,20 +302,21 @@
             </div>
         </form>
 
-        <div class="history-section">
-            <div class="history-title">Drum Job History</div>
-            <button class="btn-pdf" type="button" onclick="showPopup('PDF Feature Coming Soon')">
+        <div class="history-section" id="pdfArea">
+            <div class="history-title" id="historyTitleText">Drum Job History</div>
+            <button class="btn-pdf" type="button" id="pdfBtn" onclick="downloadPDFHistory()">
                 <i class="fa-solid fa-file-pdf"></i> Download PDF History
             </button>
             
             <div class="table-responsive">
-                <table>
+                <table id="historyTable">
                     <thead>
                         <tr>
                             <th>Date</th>
                             <th>Party</th>
+                            <th>Leather</th>
                             <th>Details</th>
-                            <th>Action</th>
+                            <th class="no-pdf">Action</th>
                         </tr>
                     </thead>
                     <tbody id="historyTableBody"></tbody>
@@ -329,6 +334,7 @@
 
         document.getElementById('inpDate').valueAsDate = new Date();
 
+        // Background loading to avoid history display delays
         async function loadSheetData() {
             try {
                 let res = await fetch(`${SCRIPT_URL}?action=fetch`);
@@ -399,7 +405,7 @@
             let filtered = sheetRecords.filter(r => r.drum === drumName);
             
             if(filtered.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#999;">No History Available</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#999;">No History Available</td></tr>`;
                 return;
             }
 
@@ -407,31 +413,33 @@
                 let cleanDate = r.date ? r.date.split('T')[0] : '';
                 let tr = document.createElement('tr');
                 
-                let detailsText = `${r.leather || ''} - ${r.details || ''} ${r.water ? '(Billo: ' + r.water + ')' : ''}`;
+                let detailsText = `${r.details || ''} ${r.water ? '(Billo: ' + r.water + ')' : ''}`;
 
                 tr.innerHTML = `
                     <td><strong>${cleanDate}</strong></td>
                     <td>${r.party || ''}</td>
+                    <td><span style="background-color:#e8f5e9; padding:2px 6px; border-radius:4px; font-weight:500;">${r.leather || '-'}</span></td>
                     <td>${detailsText}</td>
-                    <td>
+                    <td class="no-pdf">
                         <div class="action-cell">
-                            <button type="button" class="btn-row-edit" title="Edit row"><i class="fa-solid fa-pen"></i></button>
-                            <button type="button" class="btn-row-view" title="View details"><i class="fa-solid fa-eye"></i></button>
+                            <button type="button" class="btn-row-edit" title="Edit entry"><i class="fa-solid fa-pen"></i></button>
+                            <button type="button" class="btn-row-delete" title="Delete entry"><i class="fa-solid fa-trash"></i></button>
                         </div>
                     </td>
                 `;
 
-                // Edit click (Yellow Pen)
+                // Edit function trigger
                 tr.querySelector('.btn-row-edit').onclick = (e) => {
                     e.stopPropagation();
                     populateForm(r);
                 };
 
-                // View click (Eye Icon)
-                tr.querySelector('.btn-row-view').onclick = (e) => {
+                // Delete function trigger
+                tr.querySelector('.btn-row-delete').onclick = (e) => {
                     e.stopPropagation();
-                    populateForm(r);
-                    showPopup("Record Form mein mulahiza karein.");
+                    if(confirm("Kya aap waqai yeh record delete karna chahte hain?")) {
+                        deleteFromSheet(r.id);
+                    }
                 };
 
                 tbody.appendChild(tr);
@@ -445,6 +453,7 @@
             document.getElementById('inpLeather').value = record.leather || '';
             document.getElementById('inpWater').value = record.water || '';
             document.getElementById('inpDetails').value = record.details || '';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
             showPopup("Data form mein load ho gaya hai!");
         }
 
@@ -460,6 +469,7 @@
         function openDrumWindow(drumName) {
             selectedDrum = drumName;
             document.getElementById('entry-header').innerText = drumName;
+            document.getElementById('historyTitleText').innerText = `${drumName} Job History`;
             document.getElementById('screen-main').classList.remove('active');
             document.getElementById('screen-entry').classList.add('active');
 
@@ -507,6 +517,65 @@
             } catch(err) {
                 showPopup("Net slow hai, dobara save dabayein.");
             }
+        }
+
+        async function deleteFromSheet(id) {
+            showPopup("Record delete ho raha hai...");
+            try {
+                await fetch(SCRIPT_URL, {
+                    method: "POST",
+                    mode: "no-cors",
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: "delete", id: id })
+                });
+                showPopup("Record successfully Deleted!");
+                setTimeout(() => { loadSheetData(); }, 1200);
+            } catch(err) {
+                showPopup("Error! Dobara koshish karein.");
+            }
+        }
+
+        // Live PDF History Generation Feature
+        function downloadPDFHistory() {
+            showPopup("PDF generate ho rahi hai...");
+            
+            // Temporary hide elements we don't want in PDF
+            const pdfBtn = document.getElementById('pdfBtn');
+            const noPdfElements = document.querySelectorAll('.no-pdf');
+            
+            pdfBtn.style.display = 'none';
+            noPdfElements.forEach(el => el.style.display = 'none');
+
+            const element = document.getElementById('pdfArea');
+            const opt = {
+                margin:       10,
+                filename:     `${selectedDrum}_History.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2 },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            html2pdf().set(opt).from(element).save().then(() => {
+                // Restore hidden elements after processing
+                pdfBtn.style.style = '';
+                pdfBtn.style.background = '#0288d1';
+                pdfBtn.style.color = 'white';
+                pdfBtn.style.width = '100%';
+                pdfBtn.style.padding = '12px';
+                pdfBtn.style.borderRadius = '8px';
+                pdfBtn.style.marginBottom = '15px';
+                pdfBtn.style.fontSize = '1rem';
+                pdfBtn.style.fontWeight = 'bold';
+                pdfBtn.style.cursor = 'pointer';
+                pdfBtn.style.display = 'flex';
+                
+                noPdfElements.forEach(el => el.style.display = '');
+                showPopup("PDF Download ho gayi hai!");
+            }).catch(err => {
+                pdfBtn.style.display = 'flex';
+                noPdfElements.forEach(el => el.style.display = '');
+                showPopup("PDF banne mein masla aya.");
+            });
         }
 
         function showPopup(text) {
