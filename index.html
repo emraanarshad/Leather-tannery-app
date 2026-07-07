@@ -5,345 +5,357 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tannery Drum Tracker</title>
     <link rel="manifest" href="manifest.json">
-    
-    <!-- Splash Screen aur Logo Fix Tabs -->
     <meta name="theme-color" content="#2e7d32">
-    <meta name="apple-mobile-web-app-status-bar-style" content="#2e7d32">
-    <link rel="icon" type="image/png" href="logo.png">
-    
-    <!-- PDF Libraries -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
-
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background-color: #f0f2f5; padding: 15px; color: #333; }
-        .container { max-width: 500px; margin: 0 auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-        h2 { text-align: center; margin-bottom: 25px; color: #1b5e20; font-size: 22px; text-transform: uppercase; letter-spacing: 1px; }
-        .screen { display: none; }
-        .active { display: block; }
-        .grid-container { display: grid; grid-template-columns: 1fr; gap: 14px; }
-        .drum-btn { background: linear-gradient(135deg, #4caf50, #2e7d32); color: white; border: none; padding: 20px; font-size: 18px; font-weight: bold; border-radius: 10px; cursor: pointer; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.1s, background 0.2s; }
-        .drum-btn:active { transform: scale(0.98); background: #1b5e20; }
-        .outside-btn { background: linear-gradient(135deg, #ff9800, #e65100); }
-        .outside-btn:active { background: #e65100; }
-        .form-group { margin-bottom: 18px; }
-        label { display: block; font-weight: 600; margin-bottom: 6px; font-size: 15px; color: #444; }
-        input { width: 100%; padding: 14px; border: 1px solid #ccc; border-radius: 8px; font-size: 16px; background-color: #fafafa; }
-        input:focus { border-color: #4caf50; outline: none; background-color: #fff; }
-        .btn-container { display: flex; gap: 12px; margin-top: 25px; }
-        .action-btn { flex: 1; padding: 16px; font-size: 16px; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; text-transform: uppercase; }
-        .save-btn { background-color: #2e7d32; color: white; box-shadow: 0 4px 6px rgba(46,125,50,0.2); }
-        .back-btn { background-color: #757575; color: white; }
-        
-        .pdf-btn { background: linear-gradient(135deg, #0288d1, #01579b); color: white; width: 100%; padding: 14px; font-size: 15px; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; margin-top: 15px; text-transform: uppercase; }
-        
-        /* Table Styling */
-        .history-list { margin-top: 15px; border-collapse: collapse; width: 100%; font-size: 14px; }
-        .history-list th, .history-list td { border: 1px solid #ddd; padding: 10px; text-align: left; }
-        .history-list th { background-color: #2e7d32; color: white; }
-        .history-list tr:nth-child(even) { background-color: #f9f9f9; }
-        
-        /* Action icons */
-        .action-icons { display: flex; gap: 10px; font-size: 16px; cursor: pointer; }
-        .edit-icon { color: #0288d1; }
-        .delete-icon { color: #d32f2f; }
-        
-        #install-bar { display: none; background: #1b5e20; color: white; padding: 10px; text-align: center; border-radius: 8px; margin-bottom: 15px; font-weight: bold; cursor: pointer; }
-
-        /* GREEN AUTOMATIC POPUP (NO OK BUTTON) */
-        .toast-message {
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: #2e7d32;
+        :root {
+            --primary-color: #2e7d32;
+            --secondary-color: #388e3c;
+            --background-color: #f4f6f8;
+            --card-color: #ffffff;
+            --text-color: #333333;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 10px;
+        }
+        header {
+            background-color: var(--primary-color);
             color: white;
-            padding: 12px 25px;
-            border-radius: 30px;
-            font-weight: 600;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-            z-index: 9999;
-            display: none;
-            font-size: 15px;
+            padding: 15px;
             text-align: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        .drum-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .drum-card {
+            background-color: var(--card-color);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border: 2px solid transparent;
+            cursor: pointer;
+        }
+        .drum-card.active {
+            border-color: var(--primary-color);
+            background-color: #e8f5e9;
+        }
+        .drum-title {
+            font-weight: bold;
+            font-size: 1rem;
+            margin-bottom: 5px;
+        }
+        .drum-status {
+            font-size: 0.8rem;
+            color: #666;
+        }
+        .form-container, .report-container {
+            background-color: var(--card-color);
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        h3 {
+            margin-top: 0;
+            color: var(--primary-color);
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 5px;
+        }
+        label {
+            display: block;
+            margin: 10px 0 5px;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+            font-size: 1rem;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            font-weight: bold;
+            margin-top: 15px;
+            cursor: pointer;
+        }
+        button:active {
+            background-color: var(--secondary-color);
+        }
+        .btn-report {
+            background-color: #0288d1;
+        }
+        .btn-report:active {
+            background-color: #039be5;
+        }
+        #toast {
+            visibility: hidden;
+            min-width: 250px;
+            background-color: #2e7d32;
+            color: #fff;
+            text-align: center;
+            border-radius: 5px;
+            padding: 16px;
+            position: fixed;
+            z-index: 1;
+            left: 50%;
+            bottom: 30px;
+            transform: translateX(-50%);
+            font-weight: bold;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        #toast.show {
+            visibility: visible;
+            animation: fadein 0.5s, fadeout 0.5s 2.5s;
+        }
+        @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
+        @keyframes fadeout { from {bottom: 30px; opacity: 1;} to {bottom: 0; opacity: 0;} }
+        
+        .report-item {
+            background: #f9f9f9;
+            border: 1px solid #eee;
+            padding: 10px;
+            margin-top: 5px;
+            border-radius: 4px;
+            font-size: 0.9rem;
         }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <div id="install-bar" onclick="installApp()">📲 Click Karein Aur App Install Karein!</div>
+    <header>Tannery Drum Tracker</header>
 
-        <!-- FIRST WINDOW: DRUM LIST -->
-        <div id="dashboard" class="screen active">
-            <h2>Tannery Drums</h2>
-            <div class="grid-container">
-                <button class="drum-btn" onclick="openDetails('Drum 1 M')">Drum 1 M</button>
-                <button class="drum-btn" onclick="openDetails('Drum 2 M')">Drum 2 M</button>
-                <button class="drum-btn" onclick="openDetails('Drum 3 M')">Drum 3 M</button>
-                <button class="drum-btn" onclick="openDetails('Drum 4 L')">Drum 4 L (Large)</button>
-                <button class="drum-btn" onclick="openDetails('Drum 5 L')">Drum 5 L (Large)</button>
-                <button class="drum-btn outside-btn" onclick="openDetails('Drum 6 Outside')">Drum 6 Outside</button>
-            </div>
+    <!-- Drums Selection Grid -->
+    <div class="drum-grid">
+        <div class="drum-card" onclick="selectDrum('Drum 1')" id="drum-Drum 1">
+            <div class="drum-title">Drum 1</div>
+            <div class="drum-status" id="status-Drum 1">Empty</div>
         </div>
-
-        <!-- SECOND WINDOW: DRUM DETAILS & HISTORY -->
-        <div id="details-screen" class="screen">
-            <h2 id="selected-drum-title">Drum Details</h2>
-            
-            <input type="hidden" id="editing-id" value="">
-
-            <div class="form-group">
-                <label>Party Name / Party Ka Naam:</label>
-                <input type="text" id="party-name" placeholder="Party name likhein">
-            </div>
-            <div class="form-group">
-                <label>Leather Type / Chamray Ki Qisam:</label>
-                <input type="text" id="leather-type" placeholder="e.g. Cow Hide, Pith">
-            </div>
-            <div class="form-group">
-                <label>Billo Pani (Water Amount):</label>
-                <input type="text" id="billo-pani" placeholder="Pani ki miqdar">
-            </div>
-            <div class="form-group">
-                <label>Extra Chemical Details:</label>
-                <input type="text" id="chemical" placeholder="Chemicals ki detail">
-            </div>
-            <div class="form-group">
-                <label>Date / Tareekh:</label>
-                <input type="date" id="entry-date">
-            </div>
-            <div class="btn-container">
-                <button class="action-btn back-btn" onclick="goBack()">Wapas</button>
-                <button class="action-btn save-btn" onclick="saveDetails()">Save Karein</button>
-            </div>
-
-            <hr style="margin-top: 30px; border: 0; border-top: 1px solid #ccc;">
-            
-            <!-- HISTORY SECTION -->
-            <h3 style="margin-top: 20px; color: #1b5e20;">Drum Job History</h3>
-            <button class="pdf-btn" onclick="downloadPDF()">📄 Download PDF History</button>
-
-            <div style="overflow-x: auto;">
-                <table class="history-list" id="pdf-table">
-                    <thead>
-                        <tr>
-                            <th>Date</th>
-                            <th>Party</th>
-                            <th>Leather</th>
-                            <th>Details</th>
-                            <th class="no-pdf">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody id="history-table-body">
-                        <!-- Dynamic rows -->
-                    </tbody>
-                </table>
-            </div>
+        <div class="drum-card" onclick="selectDrum('Drum 2')" id="drum-Drum 2">
+            <div class="drum-title">Drum 2</div>
+            <div class="drum-status" id="status-Drum 2">Empty</div>
+        </div>
+        <div class="drum-card" onclick="selectDrum('Drum 3')" id="drum-Drum 3">
+            <div class="drum-title">Drum 3</div>
+            <div class="drum-status" id="status-Drum 3">Empty</div>
+        </div>
+        <div class="drum-card" onclick="selectDrum('Drum 4')" id="drum-Drum 4">
+            <div class="drum-title">Drum 4</div>
+            <div class="drum-status" id="status-Drum 4">Empty</div>
+        </div>
+        <div class="drum-card" onclick="selectDrum('Drum 5 Inside')" id="drum-Drum 5 Inside">
+            <div class="drum-title">Drum 5 (Inside)</div>
+            <div class="drum-status" id="status-Drum 5 Inside">Empty</div>
+        </div>
+        <div class="drum-card" onclick="selectDrum('Drum 6 Outside')" id="drum-Drum 6 Outside">
+            <div class="drum-title">Drum 6 (Outside)</div>
+            <div class="drum-status" id="status-Drum 6 Outside">Empty</div>
         </div>
     </div>
 
-    <!-- Automatic Notification Element -->
-    <div id="toast" class="toast-message"></div>
+    <!-- Data Entry Form -->
+    <div class="form-container">
+        <h3 id="form-heading">Data Entry (Select a Drum)</h3>
+        <form id="drumForm" onsubmit="saveData(event)">
+            <label>Tareekh (Date):</label>
+            <input type="date" id="entryDate" required>
+
+            <label>Party Ka Naam (Party Name):</label>
+            <input type="text" id="partyName" placeholder="e.g. Mian Asghar" required>
+
+            <label>Chumra / Maal (Leather Type):</label>
+            <input type="text" id="leatherType" placeholder="e.g. Cow Buffalo" required>
+
+            <label>Chemicals / Details:</label>
+            <textarea id="chemicalDetails" rows="3" placeholder="Chemicals ki miqdar aur baqi tafseel..."></textarea>
+
+            <button type="submit">Data Save Karein</button>
+        </form>
+    </div>
+
+    <!-- NEW: Party Wise Filter & Report Section -->
+    <div class="report-container">
+        <h3>Party Wise Report (Khata)</h3>
+        <label>Party Select Karein:</label>
+        <input type="text" id="searchParty" placeholder="Party ka naam likhein">
+
+        <label>Kab Se (From Date):</label>
+        <input type="date" id="fromDate">
+
+        <label>Kab Tak (To Date):</label>
+        <input type="date" id="toDate">
+
+        <button class="btn-report" onclick="generateReport()">Report Banayein</button>
+
+        <div id="reportResults" style="margin-top: 15px;"></div>
+    </div>
+
+    <div id="toast">Data Successfully Saved!</div>
 
     <script>
-        let currentDrum = "";
-        let deferredPrompt;
+        // Mian Web App Script (I am hosting the bridge script safely)
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz_9eWf50T9Znd7f2bWfPz30n-Tf_f45hW5OOnF6g8o66x-bW-K9D6mC7VOf7fLmgXm/exec";
+        
+        let selectedDrumName = "";
+        let allRecords = [];
 
-        // Custom Notification Function (Kills Native Alert popup)
-        function showNotification(msg) {
-            let toast = document.getElementById('toast');
-            toast.innerText = msg;
-            toast.style.display = 'block';
-            setTimeout(() => {
-                toast.style.display = 'none';
-            }, 2000);
+        // Set default date to today
+        document.getElementById('entryDate').valueAsDate = new Date();
+
+        // Fetch data from Google Sheets on Load
+        async function fetchLiveDocs() {
+            try {
+                let response = await fetch(`${SCRIPT_URL}?action=fetch`);
+                let json = await response.json();
+                if(json.status === "success") {
+                    allRecords = json.data;
+                    updateDrumStatuses();
+                }
+            } catch(e) { console.log("Fetch error", e); }
         }
 
-        function setTodayDate() {
-            document.getElementById('entry-date').value = new Date().toISOString().substring(0, 10);
-        }
-
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js').then(() => console.log("Service Worker Registered"));
-        }
-
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            document.getElementById('install-bar').style.display = 'block';
-        });
-
-        function installApp() {
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                deferredPrompt.userChoice.then((choiceResult) => {
-                    if (choiceResult.outcome === 'accepted') {
-                        document.getElementById('install-bar').style.display = 'none';
-                    }
-                    deferredPrompt = null;
-                });
-            }
-        }
-
-        function openDetails(drumName) {
-            currentDrum = drumName;
-            document.getElementById('selected-drum-title').innerText = drumName;
-            
-            setTodayDate();
-            clearForm();
-            loadHistory(drumName);
-
-            document.getElementById('dashboard').classList.remove('active');
-            document.getElementById('details-screen').classList.add('active');
-            window.scrollTo(0, 0);
-        }
-
-        function clearForm() {
-            document.getElementById('party-name').value = "";
-            document.getElementById('leather-type').value = "";
-            document.getElementById('billo-pani').value = "";
-            document.getElementById('chemical').value = "";
-            document.getElementById('editing-id').value = "";
-        }
-
-        function saveDetails() {
-            let selectedDate = document.getElementById('entry-date').value;
-            let editingId = document.getElementById('editing-id').value;
-            let timestamp = editingId ? parseInt(editingId) : new Date().getTime();
-
-            let drumData = {
-                id: timestamp,
-                party: document.getElementById('party-name').value,
-                leather: document.getElementById('leather-type').value,
-                billo: document.getElementById('billo-pani').value,
-                chemical: document.getElementById('chemical').value,
-                date: selectedDate
-            };
-
-            if(!drumData.party) {
-                showNotification("❌ Please Party Name laazmi likhein!");
-                return;
-            }
-
-            let historyKey = currentDrum + "_history";
-            let fullHistory = localStorage.getItem(historyKey) ? JSON.parse(localStorage.getItem(historyKey)) : [];
-            
-            if (editingId) {
-                let idx = fullHistory.findIndex(item => item.id === timestamp);
-                if(idx !== -1) fullHistory[idx] = drumData;
-            } else {
-                fullHistory.push(drumData);
-            }
-
-            fullHistory.sort((a, b) => new Date(b.date) - new Date(a.date) || b.id - a.id);
-            localStorage.setItem(historyKey, JSON.stringify(fullHistory));
-
-            showNotification(editingId ? "✅ Record Update Ho Gaya!" : "✅ Data Register Mein Save Ho Gaya!");
-            
-            clearForm();
-            loadHistory(currentDrum);
-        }
-
-        function loadHistory(drumName) {
-            let historyKey = drumName + "_history";
-            let fullHistory = localStorage.getItem(historyKey) ? JSON.parse(localStorage.getItem(historyKey)) : [];
-            let tableBody = document.getElementById('history-table-body');
-            
-            tableBody.innerHTML = "";
-
-            if(fullHistory.length === 0) {
-                tableBody.innerHTML = "<tr><td colspan='5' style='text-align:center; color:#999;'>Koi pichla record maujood nahi hai.</td></tr>";
-                return;
-            }
-
-            fullHistory.forEach(item => {
-                let row = `<tr>
-                    <td><b>${item.date}</b></td>
-                    <td>${item.party}</td>
-                    <td>${item.leather}</td>
-                    <td>${item.chemical} (Billo: ${item.billo})</td>
-                    <td class="no-pdf">
-                        <div class="action-icons">
-                            <span class="edit-icon" onclick="editEntry(${item.id})">✏️</span>
-                            <span class="delete-icon" onclick="deleteEntry(${item.id})">❌</span>
-                        </div>
-                    </td>
-                </tr>`;
-                tableBody.innerHTML += row;
+        function updateDrumStatuses() {
+            // Reset all statuses
+            const drums = ['Drum 1', 'Drum 2', 'Drum 3', 'Drum 4', 'Drum 5 Inside', 'Drum 6 Outside'];
+            drums.forEach(d => {
+                document.getElementById(`status-${d}`).innerText = "Empty";
+                document.getElementById(`drum-${d}`).classList.remove('active');
             });
-        }
 
-        function editEntry(id) {
-            let historyKey = currentDrum + "_history";
-            let fullHistory = JSON.parse(localStorage.getItem(historyKey));
-            let item = fullHistory.find(x => x.id === id);
-
-            if(item) {
-                document.getElementById('party-name').value = item.party;
-                document.getElementById('leather-type').value = item.leather;
-                document.getElementById('billo-pani').value = item.billo;
-                document.getElementById('chemical').value = item.chemical;
-                document.getElementById('entry-date').value = item.date;
-                document.getElementById('editing-id').value = item.id;
-                
-                window.scrollTo(0, 0);
-                showNotification("✏️ Data Edit Karein");
-            }
-        }
-
-        function deleteEntry(id) {
-            if(confirm("Kya aap waqai is record ko hamesha ke liye delete karna chahte hain?")) {
-                let historyKey = currentDrum + "_history";
-                let fullHistory = JSON.parse(localStorage.getItem(historyKey));
-                
-                fullHistory = fullHistory.filter(item => item.id !== id);
-                
-                localStorage.setItem(historyKey, JSON.stringify(fullHistory));
-                loadHistory(currentDrum);
-                showNotification("❌ Record Delete Ho Gaya");
-            }
-        }
-
-        function downloadPDF() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-
-            doc.setFontSize(18);
-            doc.text(`Tannery Job Register - ${currentDrum}`, 14, 20);
-
-            doc.autoTable({
-                html: '#pdf-table',
-                startY: 30,
-                theme: 'grid',
-                headStyles: { fillColor: [46, 125, 50] },
-                columns: [
-                    { header: 'Date', dataKey: 'date' },
-                    { header: 'Party', dataKey: 'party' },
-                    { header: 'Leather', dataKey: 'leather' },
-                    { header: 'Details', dataKey: 'details' }
-                ],
-                didParseCell: function(data) {
-                    if (data.column.index === 4) {
-                        data.cell.text = '';
-                    }
+            // Mark active drums based on the latest records found
+            allRecords.forEach(rec => {
+                let statusEl = document.getElementById(`status-${rec.drum}`);
+                if(statusEl) {
+                    statusEl.innerText = `${rec.party} (${rec.leather})`;
                 }
             });
-
-            doc.save(`${currentDrum.replace(/\s+/g, '_')}_History.pdf`);
         }
 
-        function goBack() {
-            let party = document.getElementById('party-name').value;
-            if(party) {
-                let conf = confirm("Aapne data save nahi kiya. Kya aap sach mein wapas jana chahte hain?");
-                if(!conf) return;
+        function selectDrum(drumName) {
+            selectedDrumName = drumName;
+            document.getElementById('form-heading').innerText = `Data Entry - ${drumName}`;
+            
+            // Highlight card
+            const drums = ['Drum 1', 'Drum 2', 'Drum 3', 'Drum 4', 'Drum 5 Inside', 'Drum 6 Outside'];
+            drums.forEach(d => document.getElementById(`drum-${d}`).classList.remove('active'));
+            document.getElementById(`drum-${drumName}`).classList.add('active');
+
+            // Pre-fill form if data exists
+            let existing = allRecords.find(r => r.drum === drumName);
+            if(existing) {
+                document.getElementById('entryDate').value = existing.date.split('T')[0] || existing.date;
+                document.getElementById('partyName').value = existing.party;
+                document.getElementById('leatherType').value = existing.leather;
+                document.getElementById('chemicalDetails').value = existing.details;
+            } else {
+                document.getElementById('partyName').value = "";
+                document.getElementById('leatherType').value = "";
+                document.getElementById('chemicalDetails').value = "";
+                document.getElementById('entryDate').valueAsDate = new Date();
             }
-            document.getElementById('details-screen').classList.remove('active');
-            document.getElementById('dashboard').classList.add('active');
-            window.scrollTo(0, 0);
         }
+
+        async function saveData(e) {
+            e.preventDefault();
+            if(!selectedDrumName) {
+                showToast("Pehle koi Drum select karein!");
+                return;
+            }
+
+            let id = allRecords.find(r => r.drum === selectedDrumName)?.id || new Date().getTime().toString();
+            
+            let payload = {
+                action: "save",
+                id: id,
+                date: document.getElementById('entryDate').value,
+                drum: selectedDrumName,
+                party: document.getElementById('partyName').value,
+                leather: document.getElementById('leatherType').value,
+                details: document.getElementById('chemicalDetails').value
+            };
+
+            showToast("Saving to Google Sheet...");
+
+            try {
+                let res = await fetch(SCRIPT_URL, {
+                    method: "POST",
+                    body: JSON.stringify(payload)
+                });
+                let result = await res.json();
+                if(result.status === "success") {
+                    showToast("Data Saved Successfully!");
+                    fetchLiveDocs(); // Refresh
+                }
+            } catch(err) {
+                showToast("Error saving data!");
+            }
+        }
+
+        // NEW: Generate Specific Date Range & Party Wise Report
+        function generateReport() {
+            let pSearch = document.getElementById('searchParty').value.toLowerCase().trim();
+            let fromD = document.getElementById('fromDate').value;
+            let toD = document.getElementById('toDate').value;
+            let resultDiv = document.getElementById('reportResults');
+            
+            if(!pSearch || !fromD || !toD) {
+                resultDiv.innerHTML = "<p style='color:red;'>Meharbani karke Party, From aur To date teeno bharein!</p>";
+                return;
+            }
+
+            let filtered = allRecords.filter(r => {
+                let rDate = r.date.split('T')[0];
+                let matchParty = r.party.toLowerCase().includes(pSearch);
+                let matchDate = (rDate >= fromD && rDate <= toD);
+                return matchParty && matchDate;
+            });
+
+            if(filtered.length === 0) {
+                resultDiv.innerHTML = "<p>Koi record nahi mila is tareekh ke darmiyan.</p>";
+                return;
+            }
+
+            let html = `<strong>Total ${filtered.length} Entries Mili:</strong><br>`;
+            filtered.forEach(r => {
+                html += `
+                    <div class="report-item">
+                        <strong>Date:</strong> ${r.date.split('T')[0]} | <strong>Drum:</strong> ${r.drum}<br>
+                        <strong>Maal:</strong> ${r.leather}<br>
+                        <strong>Details:</strong> ${r.details || 'No extra details'}
+                    </div>
+                `;
+            });
+            resultDiv.innerHTML = html;
+        }
+
+        function showToast(msg) {
+            let t = document.getElementById("toast");
+            t.innerText = msg;
+            t.classList.add("show");
+            setTimeout(() => { t.classList.remove("show"); }, 3000);
+        }
+
+        // Run fetch on start
+        window.onload = fetchLiveDocs;
     </script>
 </body>
 </html>
