@@ -96,7 +96,7 @@
         .form-actions {
             display: flex;
             gap: 12px;
-            margin-top: 15px;
+            margin-top: 20px;
         }
         .back-btn {
             background: #757575;
@@ -120,45 +120,6 @@
             border-radius: 8px;
             font-size: 1.1rem;
             cursor: pointer;
-        }
-        
-        /* TWO SEPARATE ACTIONS SIDE BY SIDE */
-        .edit-action-group {
-            display: flex;
-            gap: 12px;
-            margin: 15px 0;
-            border-top: 1px dashed #ccc;
-            padding-top: 15px;
-        }
-        .btn-action-edit {
-            flex: 1;
-            background-color: #d2e3fc;
-            color: #1a73e8;
-            border: 1px solid #1a73e8;
-            padding: 12px;
-            border-radius: 8px;
-            font-weight: bold;
-            font-size: 1rem;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-        .btn-action-clear {
-            flex: 1;
-            background-color: #fce8e6;
-            color: #d93025;
-            border: 1px solid #d93025;
-            padding: 12px;
-            border-radius: 8px;
-            font-weight: bold;
-            font-size: 1rem;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
         }
 
         label {
@@ -221,12 +182,42 @@
             color: white;
             padding: 12px 10px;
             font-weight: bold;
+            text-align: left;
         }
         td {
             padding: 12px 10px;
             border-bottom: 1px solid #e0e0e0;
             color: #333;
             background-color: #fff;
+            vertical-align: middle;
+        }
+        
+        /* TWO SEPARATE ACTION BUTTONS IN ROW */
+        .action-cell {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        .btn-row-edit {
+            background-color: #ffca28; /* Golden Yellow */
+            color: #000;
+            border: none;
+            padding: 6px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        .btn-row-view {
+            background-color: #e0e0e0; /* Neutral Light Gray */
+            color: #333;
+            border: none;
+            padding: 6px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        .btn-row-edit:active, .btn-row-view:active {
+            transform: scale(0.9);
         }
 
         #toast {
@@ -283,16 +274,6 @@
     <div id="screen-entry" class="screen">
         <div class="header" id="entry-header">Drum Details</div>
         
-        <!-- TWO ACTION BUTTONS SIDE BY SIDE FOR QUICK EDIT / CLEAR -->
-        <div class="edit-action-group">
-            <button type="button" class="btn-action-edit" onclick="activateEditMode()">
-                <i class="fa-solid fa-pen-to-square"></i> Edit Current Load
-            </button>
-            <button type="button" class="btn-action-clear" onclick="clearFormFields()">
-                <i class="fa-solid fa-eraser"></i> Clear Form
-            </button>
-        </div>
-
         <form id="drumForm" onsubmit="saveToSheet(event)">
             <label>Party Name / Party Ka Naam:</label>
             <input type="text" id="inpParty" placeholder="Party name likhein" required>
@@ -329,8 +310,8 @@
                         <tr>
                             <th>Date</th>
                             <th>Party</th>
-                            <th>Leather</th>
                             <th>Details</th>
+                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody id="historyTableBody"></tbody>
@@ -425,14 +406,34 @@
             filtered.forEach(r => {
                 let cleanDate = r.date ? r.date.split('T')[0] : '';
                 let tr = document.createElement('tr');
-                tr.style.cursor = "pointer";
-                tr.onclick = () => populateForm(r);
+                
+                let detailsText = `${r.leather || ''} - ${r.details || ''} ${r.water ? '(Billo: ' + r.water + ')' : ''}`;
+
                 tr.innerHTML = `
                     <td><strong>${cleanDate}</strong></td>
                     <td>${r.party || ''}</td>
-                    <td>${r.leather || ''}</td>
-                    <td>${r.details || ''} ${r.water ? '(Billo: ' + r.water + ')' : ''}</td>
+                    <td>${detailsText}</td>
+                    <td>
+                        <div class="action-cell">
+                            <button type="button" class="btn-row-edit" title="Edit row"><i class="fa-solid fa-pen"></i></button>
+                            <button type="button" class="btn-row-view" title="View details"><i class="fa-solid fa-eye"></i></button>
+                        </div>
+                    </td>
                 `;
+
+                // Edit click (Yellow Pen)
+                tr.querySelector('.btn-row-edit').onclick = (e) => {
+                    e.stopPropagation();
+                    populateForm(r);
+                };
+
+                // View click (Eye Icon)
+                tr.querySelector('.btn-row-view').onclick = (e) => {
+                    e.stopPropagation();
+                    populateForm(r);
+                    showPopup("Record Form mein mulahiza karein.");
+                };
+
                 tbody.appendChild(tr);
             });
         }
@@ -444,13 +445,7 @@
             document.getElementById('inpLeather').value = record.leather || '';
             document.getElementById('inpWater').value = record.water || '';
             document.getElementById('inpDetails').value = record.details || '';
-            showPopup("Job loaded to Edit!");
-        }
-
-        function activateEditMode() {
-            let match = sheetRecords.find(r => r.drum === selectedDrum);
-            if(match) populateForm(match);
-            else showPopup("Is drum me koi active load nahi hai.");
+            showPopup("Data form mein load ho gaya hai!");
         }
 
         function clearFormFields() {
@@ -460,7 +455,6 @@
             document.getElementById('inpDetails').value = "";
             document.getElementById('inpParty').value = "";
             document.getElementById('inpDate').valueAsDate = new Date();
-            showPopup("Form Clear ho gaya!");
         }
 
         function openDrumWindow(drumName) {
