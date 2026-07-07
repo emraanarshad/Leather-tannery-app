@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tannery Drums Tracker</title>
+    <title>Tannery Drums</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#2e7d32">
     <style>
@@ -12,36 +12,37 @@
             background-color: #f4f6f8;
             margin: 0;
             padding: 15px;
-            display: flex;
-            justify-content: center;
         }
-        .app-container {
-            width: 100%;
+        .header {
+            text-align: center;
+            color: #1b5e20;
+            font-size: 1.6rem;
+            margin-bottom: 25px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .screen {
+            display: none;
             max-width: 500px;
+            margin: 0 auto;
             background: white;
             border-radius: 15px;
             padding: 20px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.05);
             box-sizing: border-box;
         }
-        h1 {
-            text-align: center;
-            color: #1b5e20;
-            font-size: 1.6rem;
-            margin-bottom: 25px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+        .screen.active {
+            display: block;
         }
         .drum-list {
             display: flex;
             flex-direction: column;
             gap: 15px;
-            margin-bottom: 30px;
         }
         .drum-btn {
             width: 100%;
-            padding: 18px;
-            font-size: 1.2rem;
+            padding: 20px;
+            font-size: 1.3rem;
             font-weight: bold;
             color: white;
             background: linear-gradient(135deg, #4caf50, #2e7d32);
@@ -50,32 +51,22 @@
             cursor: pointer;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             text-align: center;
-            box-sizing: border-box;
-            transition: all 0.2s;
         }
         .drum-btn.outside {
             background: linear-gradient(135deg, #ff9800, #e65100);
         }
-        .drum-btn.billo-pani {
+        .drum-btn.has-load {
             background: linear-gradient(135deg, #00bcd4, #0097a7) !important;
-            color: white !important;
         }
-        .drum-btn:active {
-            transform: scale(0.98);
-        }
-        .form-section, .report-section {
-            background: #fafafa;
-            border: 1px solid #eeeeee;
-            border-radius: 12px;
-            padding: 15px;
-            margin-bottom: 25px;
-        }
-        h3 {
-            margin-top: 0;
-            color: #2e7d32;
-            border-bottom: 2px solid #2e7d32;
-            padding-bottom: 5px;
-            font-size: 1.1rem;
+        .back-btn {
+            background: #555555;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-bottom: 20px;
         }
         label {
             display: block;
@@ -85,35 +76,31 @@
         }
         input, textarea {
             width: 100%;
-            padding: 10px;
+            padding: 11px;
             border: 1px solid #cccccc;
             border-radius: 6px;
             box-sizing: border-box;
             font-size: 1rem;
+            margin-bottom: 10px;
         }
-        .btn-submit {
+        .btn-save {
             background: #2e7d32;
             color: white;
             font-weight: bold;
             border: none;
-            padding: 12px;
+            padding: 14px;
             width: 100%;
             border-radius: 6px;
-            margin-top: 15px;
-            font-size: 1rem;
+            font-size: 1.1rem;
             cursor: pointer;
         }
-        .btn-report {
-            background: #0288d1;
-            color: white;
-            font-weight: bold;
-            border: none;
+        .details-box {
+            background: #eef2f3;
             padding: 12px;
-            width: 100%;
-            border-radius: 6px;
+            border-radius: 8px;
             margin-top: 15px;
-            font-size: 1rem;
-            cursor: pointer;
+            border-left: 5px solid #2e7d32;
+            font-size: 0.95rem;
         }
         #toast {
             visibility: hidden;
@@ -124,7 +111,7 @@
             border-radius: 6px;
             padding: 16px;
             position: fixed;
-            z-index: 5;
+            z-index: 10;
             left: 50%;
             bottom: 30px;
             transform: translateX(-50%);
@@ -133,221 +120,182 @@
         #toast.show {
             visibility: visible;
         }
-        .report-item {
-            background: white;
-            border-left: 5px solid #0288d1;
-            padding: 10px;
-            margin-top: 8px;
-            border-radius: 4px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            font-size: 0.9rem;
-        }
     </style>
 </head>
 <body>
 
-    <div class="app-container">
-        <h1>Tannery Drums</h1>
-
-        <!-- High-Quality Big Buttons List -->
+    <!-- SCREEN 1: MAIN DRUMS WINDOW -->
+    <div id="screen-main" class="screen active">
+        <div class="header">Tannery Drums</div>
         <div class="drum-list">
-            <button class="drum-btn" id="btn-Drum 1 M" onclick="selectDrum('Drum 1 M')">Drum 1 M <span id="lbl-Drum 1 M"></span></button>
-            <button class="drum-btn" id="btn-Drum 2 M" onclick="selectDrum('Drum 2 M')">Drum 2 M <span id="lbl-Drum 2 M"></span></button>
-            <button class="drum-btn" id="btn-Drum 3 M" onclick="selectDrum('Drum 3 M')">Drum 3 M <span id="lbl-Drum 3 M"></span></button>
-            <button class="drum-btn" id="btn-Drum 4 L" onclick="selectDrum('Drum 4 L')">Drum 4 L (Large) <span id="lbl-Drum 4 L"></span></button>
-            <button class="drum-btn" id="btn-Drum 5 L" onclick="selectDrum('Drum 5 L')">Drum 5 L (Large) <span id="lbl-Drum 5 L"></span></button>
-            <button class="drum-btn outside" id="btn-Drum 6 Outside" onclick="selectDrum('Drum 6 Outside')">Drum 6 Outside <span id="lbl-Drum 6 Outside"></span></button>
+            <button class="drum-btn" id="btn-Drum 1 M" onclick="openDrumWindow('Drum 1 M')">Drum 1 M <div id="lbl-Drum 1 M" style="font-size:0.9rem; font-weight:normal;"></div></button>
+            <button class="drum-btn" id="btn-Drum 2 M" onclick="openDrumWindow('Drum 2 M')">Drum 2 M <div id="lbl-Drum 2 M" style="font-size:0.9rem; font-weight:normal;"></div></button>
+            <button class="drum-btn" id="btn-Drum 3 M" onclick="openDrumWindow('Drum 3 M')">Drum 3 M <div id="lbl-Drum 3 M" style="font-size:0.9rem; font-weight:normal;"></div></button>
+            <button class="drum-btn" id="btn-Drum 4 L" onclick="openDrumWindow('Drum 4 L')">Drum 4 L (Large) <div id="lbl-Drum 4 L" style="font-size:0.9rem; font-weight:normal;"></div></button>
+            <button class="drum-btn" id="btn-Drum 5 L" onclick="openDrumWindow('Drum 5 L')">Drum 5 L (Large) <div id="lbl-Drum 5 L" style="font-size:0.9rem; font-weight:normal;"></div></button>
+            <button class="drum-btn outside" id="btn-Drum 6 Outside" onclick="openDrumWindow('Drum 6 Outside')">Drum 6 Outside <div id="lbl-Drum 6 Outside" style="font-size:0.9rem; font-weight:normal;"></div></button>
         </div>
+    </div>
 
-        <!-- Dynamic Entry Form -->
-        <div class="form-section">
-            <h3 id="form-title">Data Entry (Select a Drum)</h3>
-            <form id="entryForm" onsubmit="handleSave(event)">
-                <label>Tareekh (Date):</label>
-                <input type="date" id="formDate" required>
+    <!-- SCREEN 2: ENTRY & DETAILS WINDOW -->
+    <div id="screen-entry" class="screen">
+        <button class="back-btn" onclick="showMainScreen()">← Wapis (Back)</button>
+        <div class="header" id="entry-header">Drum Details</div>
+        
+        <form id="drumForm" onsubmit="saveToSheet(event)">
+            <label>Tareekh (Date):</label>
+            <input type="date" id="inpDate" required>
 
-                <label>Party Ka Naam:</label>
-                <input type="text" id="formParty" placeholder="e.g. Mian Asghar" required>
-
-                <label>Chumra / Maal Type:</label>
-                <input type="text" id="formLeather" placeholder="e.g. Cow Buffalo" required>
-
-                <!-- RE-ADDED: Pani ki miqdar option -->
-                <label>Pani Ki Miqdar (Water Level/Billo Pani):</label>
-                <input type="text" id="formWater" placeholder="e.g. 1/2 Pani, 3/4 ya Billo Pani">
-
-                <label>Chemicals / Details:</label>
-                <textarea id="formDetails" rows="3" placeholder="Chemical details likhein..."></textarea>
-
-                <button type="submit" class="btn-submit">Data Save Karein</button>
-            </form>
-        </div>
-
-        <!-- Khata / Party Report Filter -->
-        <div class="report-section">
-            <h3>Party Wise Report (Khata)</h3>
             <label>Party Ka Naam:</label>
-            <input type="text" id="searchParty" placeholder="Party ka naam likhein">
+            <input type="text" id="inpParty" placeholder="Party ka naam" required>
 
-            <label>Kab Se (From Date):</label>
-            <input type="date" id="fromDate">
+            <label>Chumra / Maal Type:</label>
+            <input type="text" id="inpLeather" placeholder="e.g. Cow/Buffalo" required>
 
-            <label>Kab Tak (To Date):</label>
-            <input type="date" id="toDate">
+            <label>Pani Ki Miqdar (Water Level):</label>
+            <input type="text" id="inpWater" placeholder="e.g. Billo Pani, 1/2 Pani">
 
-            <button type="button" class="btn-report" onclick="runReport()">Report Banayein</button>
+            <label>Chemicals / Details:</label>
+            <textarea id="inpDetails" rows="4" placeholder="Chemicals ki tafseel..."></textarea>
 
-            <div id="reportBox" style="margin-top: 15px;"></div>
+            <button type="submit" class="btn-save">Data Save Karein</button>
+        </form>
+
+        <!-- Current Active Live Details Display Below Form -->
+        <div id="liveDetailsDisplay" class="details-box" style="display:none;">
+            <strong>Is Drum Ka Mojooda Maal:</strong><br>
+            <span id="txtLiveDetails"></span>
         </div>
     </div>
 
     <div id="toast">Loading...</div>
 
     <script>
+        // Direct Connecting Bridge Url linked to your Spreadsheet 1omws7d9Sr2UE8z6lmsVXRR7IsZ7oiiP0jU8tFPXxcus
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz_9eWf50T9Znd7f2bWfPz30n-Tf_f45hW5OOnF6g8o66x-bW-K9D6mC7VOf7fLmgXm/exec";
-        let activeDrum = "";
-        let globalRecords = [];
+        let selectedDrum = "";
+        let sheetRecords = [];
 
-        document.getElementById('formDate').valueAsDate = new Date();
+        document.getElementById('inpDate').valueAsDate = new Date();
 
-        async function fetchDocs() {
+        async function loadSheetData() {
             try {
-                let response = await fetch(`${SCRIPT_URL}?action=fetch`);
-                let json = await response.json();
+                let res = await fetch(`${SCRIPT_URL}?action=fetch`);
+                let json = await res.json();
                 if(json.status === "success") {
-                    globalRecords = json.data;
-                    syncButtons();
+                    sheetRecords = json.data;
+                    updateMainButtons();
                 }
-            } catch(e) { console.log(e); }
+            } catch(e) { console.log("Load Error", e); }
         }
 
-        function syncButtons() {
+        function updateMainButtons() {
             const list = ['Drum 1 M', 'Drum 2 M', 'Drum 3 M', 'Drum 4 L', 'Drum 5 L', 'Drum 6 Outside'];
             list.forEach(d => {
                 let btn = document.getElementById(`btn-${d}`);
                 let lbl = document.getElementById(`lbl-${d}`);
-                if(btn) {
-                    btn.classList.remove('billo-pani');
-                    lbl.innerText = "";
+                if(btn && lbl) {
+                    btn.classList.remove('has-load');
+                    lbl.innerText = "Khali (Empty)";
                 }
             });
 
-            globalRecords.forEach(r => {
+            sheetRecords.forEach(r => {
                 let btn = document.getElementById(`btn-${r.drum}`);
                 let lbl = document.getElementById(`lbl-${r.drum}`);
                 if(btn && lbl) {
-                    btn.classList.add('billo-pani'); 
-                    lbl.innerText = ` - [${r.party}]`;
+                    btn.classList.add('has-load'); // Change to Billo Pani color if has data
+                    lbl.innerText = `Maal: ${r.party} (${r.leather})`;
                 }
             });
         }
 
-        function selectDrum(name) {
-            activeDrum = name;
-            document.getElementById('form-title').innerText = `Data Entry - ${name}`;
+        function openDrumWindow(drumName) {
+            selectedDrum = drumName;
+            document.getElementById('entry-header').innerText = drumName;
             
-            let found = globalRecords.find(r => r.drum === name);
-            if(found) {
-                let rawDate = found.date;
-                if(rawDate.includes('T')) {
-                    rawDate = rawDate.split('T')[0];
-                }
-                document.getElementById('formDate').value = rawDate;
-                document.getElementById('formParty').value = found.party;
-                document.getElementById('formLeather').value = found.leather;
-                document.getElementById('formWater').value = found.water || "";
-                document.getElementById('formDetails').value = found.details;
+            document.getElementById('screen-main').classList.remove('active');
+            document.getElementById('screen-entry').classList.add('active');
+
+            let match = sheetRecords.find(r => r.drum === drumName);
+            let displayBox = document.getElementById('liveDetailsDisplay');
+            
+            if(match) {
+                document.getElementById('inpDate').value = match.date.split('T')[0];
+                document.getElementById('inpParty').value = match.party;
+                document.getElementById('inpLeather').value = match.leather;
+                document.getElementById('inpWater').value = match.water || "";
+                document.getElementById('inpDetails').value = match.details;
+                
+                document.getElementById('txtLiveDetails').innerHTML = `
+                    <strong>Tareekh:</strong> ${match.date.split('T')[0]}<br>
+                    <strong>Party:</strong> ${match.party}<br>
+                    <strong>Maal:</strong> ${match.leather}<br>
+                    <strong>Pani:</strong> ${match.water || 'Nahi likha'}<br>
+                    <strong>Chemicals:</strong> ${match.details}
+                `;
+                displayBox.style.display = "block";
             } else {
-                document.getElementById('formParty').value = "";
-                document.getElementById('formLeather').value = "";
-                document.getElementById('formWater').value = "";
-                document.getElementById('formDetails').value = "";
-                document.getElementById('formDate').valueAsDate = new Date();
+                document.getElementById('inpParty').value = "";
+                document.getElementById('inpLeather').value = "";
+                document.getElementById('inpWater').value = "";
+                document.getElementById('inpDetails').value = "";
+                document.getElementById('inpDate').valueAsDate = new Date();
+                displayBox.style.display = "none";
             }
         }
 
-        async function handleSave(e) {
+        function showMainScreen() {
+            document.getElementById('screen-entry').classList.remove('active');
+            document.getElementById('screen-main').classList.add('active');
+        }
+
+        async function saveToSheet(e) {
             e.preventDefault();
-            if(!activeDrum) {
-                popupToast("Pehle upar se koi ek Drum select karein!");
-                return;
-            }
+            
+            let existing = sheetRecords.find(r => r.drum === selectedDrum);
+            let rowId = existing ? existing.id.toString() : new Date().getTime().toString();
 
-            let foundRec = globalRecords.find(r => r.drum === activeDrum);
-            let existingId = foundRec ? foundRec.id.toString() : new Date().getTime().toString();
-
-            let rowData = {
+            let payload = {
                 action: "save",
-                id: existingId,
-                date: document.getElementById('formDate').value,
-                drum: activeDrum,
-                party: document.getElementById('formParty').value,
-                leather: document.getElementById('formLeather').value,
-                water: document.getElementById('formWater').value,
-                details: document.getElementById('formDetails').value
+                id: rowId,
+                date: document.getElementById('inpDate').value,
+                drum: selectedDrum,
+                party: document.getElementById('inpParty').value,
+                leather: document.getElementById('inpLeather').value,
+                water: document.getElementById('inpWater').value,
+                details: document.getElementById('inpDetails').value
             };
 
-            popupToast("Google Sheet me save ho raha hai...");
+            showPopup("Google Sheet me save ho raha hai...");
 
             try {
-                // background no-cors mode used to prevent local browser errors
-                await fetch(SCRIPT_URL, { 
-                    method: "POST", 
-                    mode: "no-cors", 
+                await fetch(SCRIPT_URL, {
+                    method: "POST",
+                    mode: "no-cors",
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(rowData) 
+                    body: JSON.stringify(payload)
                 });
                 
-                popupToast("Mubarak ho! Data Sheet me save hogya.");
-                setTimeout(fetchDocs, 1500); 
+                showPopup("Data successfully Sheet me chalagya!");
+                setTimeout(() => {
+                    loadSheetData();
+                    showMainScreen();
+                }, 1200);
                 
             } catch(err) {
-                popupToast("Error! Ek dafay dobara save dabayein.");
+                showPopup("Net slow hai, dobara save dabayein.");
             }
         }
 
-        function runReport() {
-            let pName = document.getElementById('searchParty').value.toLowerCase().trim();
-            let fDate = document.getElementById('fromDate').value;
-            let tDate = document.getElementById('toDate').value;
-            let rBox = document.getElementById('reportBox');
-
-            if(!pName || !fDate || !tDate) {
-                rBox.innerHTML = "<p style='color:red; font-weight:bold;'>Party, From Date aur To Date sab bharein!</p>";
-                return;
-            }
-
-            let matches = globalRecords.filter(r => {
-                let cleanDate = r.date.split('T')[0];
-                return r.party.toLowerCase().includes(pName) && (cleanDate >= fDate && cleanDate <= tDate);
-            });
-
-            if(matches.length === 0) {
-                rBox.innerHTML = "<p>Is dauran is party ka koi maal nahi mila.</p>";
-                return;
-            }
-
-            let resHtml = `<strong>Total ${matches.length} entries mili hain:</strong>`;
-            matches.forEach(m => {
-                resHtml += `
-                    <div class="report-item">
-                        <strong>Tareekh:</strong> ${m.date.split('T')[0]} | <strong>Drum:</strong> ${m.drum}<br>
-                        <strong>Maal:</strong> ${m.leather} | <strong>Pani:</strong> ${m.water || 'Nahi likha'}<br>
-                        <strong>Tafseel:</strong> ${m.details || 'Nahi likhi'}
-                    </div>
-                `;
-            });
-            rBox.innerHTML = resHtml;
-        }
-
-        function popupToast(text) {
+        function showPopup(text) {
             let t = document.getElementById("toast");
             t.innerText = text;
             t.classList.add("show");
             setTimeout(() => { t.classList.remove("show"); }, 3000);
         }
 
-        window.onload = fetchDocs;
+        window.onload = loadSheetData;
     </script>
 </body>
 </html>
