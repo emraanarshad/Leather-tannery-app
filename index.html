@@ -344,13 +344,13 @@
     <div id="toast">Loading...</div>
 
     <script>
+        // UPDATED SCRIPT URL FROM VERSION 4 DEPLOYMENT
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbybajeiYGRFnM4bpEhe3Nds0VyhFZ0l7Jk19LY-CI8VTuyeqNiEhZ7zOtYqIQ9I30ifkw/exec";
         let selectedDrum = "";
         let sheetRecords = [];
 
         document.getElementById('inpDate').valueAsDate = new Date();
 
-        // Background loading to avoid data delay
         async function loadSheetData() {
             try {
                 let res = await fetch(`${SCRIPT_URL}?action=fetch`);
@@ -366,7 +366,6 @@
             } catch(e) { console.log("Load Error", e); }
         }
 
-        // 1. IMPROVED PARTY DETAIL REPORT FUNCTION WITH DATE WISE LIST
         function generatePartyLiveReport() {
             let searchName = document.getElementById('searchPartyName').value.trim().toLowerCase();
             let reportSection = document.getElementById('partyReportSection');
@@ -378,7 +377,6 @@
                 return;
             }
 
-            // Filter Records for requested Party
             let filtered = sheetRecords.filter(r => r.party && r.party.toLowerCase().includes(searchName));
             
             if(filtered.length === 0) {
@@ -389,7 +387,6 @@
                 return;
             }
 
-            // Date Wise sorting (Latest on Top)
             filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
 
             title.innerText = `Record List for: ${filtered[0].party}`;
@@ -413,7 +410,6 @@
                     </td>
                 `;
 
-                // Edit/Delete handlers inside Report Table
                 tr.querySelector('.btn-row-edit').onclick = () => { openDrumWindow(r.drum); populateForm(r); };
                 tr.querySelector('.btn-row-delete').onclick = () => { if(confirm("Kya aap delete karna chahte hain?")) deleteFromSheet(r.id); };
 
@@ -544,7 +540,6 @@
             } catch(err) { showPopup("Error! Dobara koshish karein."); }
         }
 
-        // 2. DOWNLOAD PARTY SPECIFIC REPORT PDF
         function downloadPartyPDF() {
             showPopup("Party PDF ban rahi hai...");
             const btn = document.getElementById('partyPdfBtn');
@@ -561,7 +556,6 @@
             });
         }
 
-        // 3. DOWNLOAD DRUM SPECIFIC HISTORY PDF
         function downloadDrumPDF() {
             showPopup("Drum PDF ban rahi hai...");
             const btn = document.getElementById('drumPdfBtn');
