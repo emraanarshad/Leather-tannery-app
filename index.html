@@ -1,590 +1,82 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tannery Drums Management</title>
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#2e7d32">
-    <!-- FontAwesome for Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <!-- html2pdf Library for Downloading PDF History -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    
+    <title>Tannery App</title>
     <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-            background-color: #f4f6f8;
-            margin: 0;
-            padding: 15px;
-        }
-        .header {
-            text-align: center;
-            color: #1b5e20;
-            font-size: 1.6rem;
-            margin-bottom: 20px;
-            font-weight: bold;
-            text-transform: uppercase;
-        }
-        .screen {
-            display: none;
-            max-width: 600px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-            box-sizing: border-box;
-        }
-        .screen.active {
-            display: block;
-        }
-        
-        /* REPORT BOX STYLES */
-        .report-card {
-            background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
-            padding: 15px;
-            border-radius: 12px;
-            margin-bottom: 20px;
-            border: 1px solid #a5d6a7;
-        }
-        .report-grid {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 10px;
-        }
-        .report-grid input {
-            flex: 1;
-            padding: 12px;
-            border-radius: 6px;
-            border: 1px solid #999;
-            font-size: 0.95rem;
-        }
-        
-        /* LIVE PARTY REPORT TABLE */
-        .report-table-section {
-            margin-top: 15px;
-            background: white;
-            border-radius: 8px;
-            padding: 10px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-        }
-
-        .drum-list {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-        .drum-btn {
-            width: 100%;
-            padding: 22px;
-            font-size: 1.4rem;
-            font-weight: bold;
-            color: white;
-            background: linear-gradient(135deg, #4caf50, #2e7d32);
-            border: none;
-            border-radius: 12px;
-            cursor: pointer;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            text-align: center;
-        }
-        .drum-btn.outside {
-            background: linear-gradient(135deg, #ff9800, #e65100);
-        }
-        .drum-btn.has-load {
-            background: linear-gradient(135deg, #00bcd4, #0097a7) !important;
-        }
-        
-        /* ACTIONS & BUTTONS */
-        .form-actions {
-            display: flex;
-            gap: 12px;
-            margin-top: 20px;
-        }
-        .back-btn {
-            background: #757575;
-            color: white;
-            padding: 14px;
-            border: none;
-            border-radius: 8px;
-            font-weight: bold;
-            cursor: pointer;
-            flex: 1;
-            font-size: 1.1rem;
-            text-align: center;
-        }
-        .btn-save {
-            background: #2e7d32;
-            color: white;
-            font-weight: bold;
-            border: none;
-            padding: 14px;
-            flex: 1;
-            border-radius: 8px;
-            font-size: 1.1rem;
-            cursor: pointer;
-        }
-
-        label {
-            display: block;
-            margin: 12px 0 4px;
-            font-weight: bold;
-            font-size: 0.95rem;
-            color: #333;
-        }
-        input, textarea, select {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #cccccc;
-            border-radius: 8px;
-            box-sizing: border-box;
-            font-size: 1rem;
-            margin-bottom: 10px;
-            background-color: #fafafa;
-        }
-        
-        .history-section {
-            margin-top: 25px;
-            border-top: 1px solid #e0e0e0;
-            padding-top: 20px;
-        }
-        .history-title {
-            font-size: 1.4rem;
-            color: #1b5e20;
-            font-weight: bold;
-            margin-bottom: 15px;
-        }
-        .btn-pdf {
-            background: #d32f2f; /* Red PDF button */
-            color: white;
-            border: none;
-            width: 100%;
-            padding: 12px;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: bold;
-            margin-bottom: 15px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-        .table-responsive {
-            overflow-x: auto;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.95rem;
-        }
-        th {
-            background-color: #2e7d32;
-            color: white;
-            padding: 12px 10px;
-            font-weight: bold;
-            text-align: left;
-        }
-        td {
-            padding: 12px 10px;
-            border-bottom: 1px solid #e0e0e0;
-            color: #333;
-            background-color: #fff;
-            vertical-align: middle;
-        }
-        
-        /* ACTION CELL - PEN & DELETE BUTTONS */
-        .action-cell {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-        }
-        .btn-row-edit {
-            background-color: #ffca28; /* Golden Yellow Pen Button */
-            color: #000;
-            border: none;
-            padding: 8px 12px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.95rem;
-        }
-        .btn-row-delete {
-            background-color: #e53935; /* Alert Red Delete Button */
-            color: white;
-            border: none;
-            padding: 8px 12px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.95rem;
-        }
-        .btn-row-edit:active, .btn-row-delete:active {
-            transform: scale(0.9);
-        }
-
-        #toast {
-            visibility: hidden;
-            min-width: 250px;
-            background-color: #333;
-            color: #fff;
-            text-align: center;
-            border-radius: 6px;
-            padding: 16px;
-            position: fixed;
-            z-index: 100;
-            left: 50%;
-            bottom: 30px;
-            transform: translateX(-50%);
-            font-weight: bold;
-        }
-        #toast.show {
-            visibility: visible;
-        }
+        body { font-family: sans-serif; padding: 15px; background: #f4f6f8; }
+        .btn { width: 100%; padding: 20px; margin-bottom: 10px; border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; }
+        .drum-btn { background: #4caf50; }
+        input, textarea { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; background: white; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
     </style>
 </head>
 <body>
-
-    <!-- SCREEN 1: MAIN DRUMS WINDOW + PARTY SEARCH WITH FULL LIVE TABLE REPORT -->
-    <div id="screen-main" class="screen active">
-        <div class="header">Tannery Drums</div>
-        
-        <div class="report-card">
-            <strong style="color:#1b5e20; display:block; margin-bottom:8px;"><i class="fa-solid fa-chart-simple"></i> Party Drum Detail Report:</strong>
-            <div class="report-grid">
-                <input type="text" id="searchPartyName" placeholder="Party Ka Naam Likhein..." oninput="generatePartyLiveReport()">
-            </div>
-            
-            <!-- Dynamic Party Wise History Table Inside Main Screen -->
-            <div id="partyReportSection" class="report-table-section" style="display:none;">
-                <button class="btn-pdf" type="button" id="partyPdfBtn" onclick="downloadPartyPDF()">
-                    <i class="fa-solid fa-file-pdf"></i> Download Party Report PDF
-                </button>
-                <div class="table-responsive" id="partyPdfArea">
-                    <h4 id="partyReportTitle" style="margin: 5px 0 10px 0; color: #1b5e20;"></h4>
-                    <table id="partyReportTable">
-                        <thead>
-                            <tr>
-                                <th>Date</th>
-                                <th>Drum</th>
-                                <th>Leather</th>
-                                <th>Details</th>
-                                <th class="no-pdf">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody id="partyReportTableBody"></tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <!-- Correct Complete 6 Drums Configuration -->
-        <div class="drum-list">
-            <button class="drum-btn" id="btn-Drum 1 M" onclick="openDrumWindow('Drum 1 M')">Drum 1 M</button>
-            <button class="drum-btn" id="btn-Drum 2 M" onclick="openDrumWindow('Drum 2 M')">Drum 2 M</button>
-            <button class="drum-btn" id="btn-Drum 3 M" onclick="openDrumWindow('Drum 3 M')">Drum 3 M</button>
-            <button class="drum-btn" id="btn-Drum 4 L" onclick="openDrumWindow('Drum 4 L')">Drum 4 L (Large)</button>
-            <button class="drum-btn" id="btn-Drum 5 L" onclick="openDrumWindow('Drum 5 L')">Drum 5 L (Large)</button>
-            <button class="drum-btn outside" id="btn-Drum 6 Outside" onclick="openDrumWindow('Drum 6 Outside')">Drum 6 Outside</button>
-        </div>
+    <div id="main">
+        <h3>Tannery Drums</h3>
+        <button class="btn drum-btn" onclick="openEntry('Drum 1 M')">Drum 1 M</button>
+        <button class="btn drum-btn" onclick="openEntry('Drum 2 M')">Drum 2 M</button>
+        <button class="btn drum-btn" onclick="openEntry('Drum 3 M')">Drum 3 M</button>
+        <button class="btn drum-btn" onclick="openEntry('Drum 4 L')">Drum 4 L (Large)</button>
+        <button class="btn drum-btn" onclick="openEntry('Drum 5 L')">Drum 5 L (Large)</button>
+        <button class="btn drum-btn" style="background:#ff9800" onclick="openEntry('Drum 6 Outside')">Drum 6 Outside</button>
     </div>
 
-    <!-- SCREEN 2: ENTRY, DETAILS & HISTORY WINDOW -->
-    <div id="screen-entry" class="screen">
-        <div class="header" id="entry-header">Drum Details</div>
-        
-        <form id="drumForm" onsubmit="saveToSheet(event)">
-            <label>Party Name / Party Ka Naam:</label>
-            <input type="text" id="inpParty" placeholder="Party name likhein" required>
-
-            <label>Leather Type / Chamray Ki Qisam:</label>
-            <input type="text" id="inpLeather" placeholder="e.g. Cow Hide, Pith" required>
-
-            <label>Billo Pani (Water Amount):</label>
-            <input type="text" id="inpWater" placeholder="Pani ki miqdar">
-
-            <label>Extra Chemical Details:</label>
-            <textarea id="inpDetails" rows="3" placeholder="Chemicals ki detail"></textarea>
-
-            <label>Date / Tareekh:</label>
-            <input type="date" id="inpDate" required>
-            
-            <input type="hidden" id="inpId">
-
-            <div class="form-actions">
-                <button type="button" class="back-btn" onclick="showMainScreen()">Wapas</button>
-                <button type="submit" class="btn-save">Save Karein</button>
-            </div>
-        </form>
-
-        <!-- DRUM SPECIFIC HISTORY WITH PDF DOWNLOAD -->
-        <div class="history-section" id="drumPdfArea">
-            <div class="history-title" id="historyTitleText">Drum Job History</div>
-            <button class="btn-pdf" type="button" id="drumPdfBtn" onclick="downloadDrumPDF()">
-                <i class="fa-solid fa-file-pdf"></i> Download Drum History PDF
-            </button>
-            
-            <div class="table-responsive">
-                <table id="historyTable">
-                    <thead>
-                        <tr>
-                            <th>Date</th>
-                            <th>Party</th>
-                            <th>Leather</th>
-                            <th>Details</th>
-                            <th class="no-pdf">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody id="historyTableBody"></tbody>
-                </table>
-            </div>
-        </div>
+    <div id="entry" style="display:none;">
+        <h3 id="title">Drum Details</h3>
+        <input type="text" id="inpParty" placeholder="Party Name">
+        <input type="text" id="inpLeather" placeholder="Leather Type">
+        <input type="date" id="inpDate">
+        <button class="btn" style="background:#2e7d32" onclick="save()">Save Karein</button>
+        <button class="btn" style="background:#757575" onclick="showMain()">Wapas</button>
+        <table><thead><tr><th>Date</th><th>Party</th><th>Action</th></tr></thead><tbody id="body"></tbody></table>
     </div>
-
-    <div id="toast">Loading...</div>
 
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbybajeiYGRFnM4bpEhe3Nds0VyhFZ0l7Jk19LY-CI8VTuyeqNiEhZ7zOtYqIQ9I30ifkw/exec";
-        let selectedDrum = "";
-        let sheetRecords = [];
+        let drum = "";
+        let data = JSON.parse(localStorage.getItem('tanneryData')) || [];
 
-        document.getElementById('inpDate').valueAsDate = new Date();
-
-        // Background loading to avoid data delay
-        async function loadSheetData() {
-            try {
-                let res = await fetch(`${SCRIPT_URL}?action=fetch`);
-                let json = await res.json();
-                if(json.status === "success") {
-                    sheetRecords = json.data;
-                    updateMainButtons();
-                    generatePartyLiveReport();
-                    if(document.getElementById('screen-entry').classList.contains('active')) {
-                        buildHistoryTable(selectedDrum);
-                    }
-                }
-            } catch(e) { console.log("Load Error", e); }
+        function openEntry(name) {
+            drum = name;
+            document.getElementById('title').innerText = name;
+            document.getElementById('main').style.display = 'none';
+            document.getElementById('entry').style.display = 'block';
+            render();
         }
 
-        // 1. IMPROVED PARTY DETAIL REPORT FUNCTION WITH DATE WISE LIST
-        function generatePartyLiveReport() {
-            let searchName = document.getElementById('searchPartyName').value.trim().toLowerCase();
-            let reportSection = document.getElementById('partyReportSection');
-            let tbody = document.getElementById('partyReportTableBody');
-            let title = document.getElementById('partyReportTitle');
-
-            if(!searchName) {
-                reportSection.style.display = "none";
-                return;
-            }
-
-            // Filter Records for requested Party
-            let filtered = sheetRecords.filter(r => r.party && r.party.toLowerCase().includes(searchName));
-            
-            if(filtered.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#999;">Is Naam Ka Koi Record Nahi Mila</td></tr>`;
-                title.innerText = `Party: ${document.getElementById('searchPartyName').value}`;
-                reportSection.style.display = "block";
-                document.getElementById('partyPdfBtn').style.display = "none";
-                return;
-            }
-
-            // Date Wise sorting (Latest on Top)
-            filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
-
-            title.innerText = `Record List for: ${filtered[0].party}`;
-            tbody.innerHTML = "";
-
-            filtered.forEach(r => {
-                let cleanDate = r.date ? r.date.split('T')[0] : '';
-                let tr = document.createElement('tr');
-                let detailsText = `${r.details || ''} ${r.water ? '(Billo: ' + r.water + ')' : ''}`;
-
-                tr.innerHTML = `
-                    <td><strong>${cleanDate}</strong></td>
-                    <td><span style="background:#f0f0f0; padding:2px 5px; border-radius:4px;">${r.drum || '-'}</span></td>
-                    <td><span style="background-color:#e8f5e9; padding:2px 6px; border-radius:4px; font-weight:500;">${r.leather || '-'}</span></td>
-                    <td>${detailsText}</td>
-                    <td class="no-pdf">
-                        <div class="action-cell">
-                            <button type="button" class="btn-row-edit" title="Edit entry"><i class="fa-solid fa-pen"></i></button>
-                            <button type="button" class="btn-row-delete" title="Delete entry"><i class="fa-solid fa-trash"></i></button>
-                        </div>
-                    </td>
-                `;
-
-                // Edit/Delete handlers inside Report Table
-                tr.querySelector('.btn-row-edit').onclick = () => { openDrumWindow(r.drum); populateForm(r); };
-                tr.querySelector('.btn-row-delete').onclick = () => { if(confirm("Kya aap delete karna chahte hain?")) deleteFromSheet(r.id); };
-
-                tbody.appendChild(tr);
-            });
-
-            document.getElementById('partyPdfBtn').style.display = "flex";
-            reportSection.style.display = "block";
+        function showMain() {
+            document.getElementById('main').style.display = 'block';
+            document.getElementById('entry').style.display = 'none';
         }
 
-        function updateMainButtons() {
-            const list = ['Drum 1 M', 'Drum 2 M', 'Drum 3 M', 'Drum 4 L', 'Drum 5 L', 'Drum 6 Outside'];
-            list.forEach(d => {
-                let btn = document.getElementById(`btn-${d}`);
-                if(btn) btn.classList.remove('has-load');
-            });
-
-            sheetRecords.forEach(r => {
-                let btn = document.getElementById(`btn-${r.drum}`);
-                if(btn) btn.classList.add('has-load');
-            });
-        }
-
-        function buildHistoryTable(drumName) {
-            const tbody = document.getElementById('historyTableBody');
-            tbody.innerHTML = "";
-            let filtered = sheetRecords.filter(r => r.drum === drumName);
-            
-            if(filtered.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#999;">No History Available</td></tr>`;
-                return;
-            }
-
-            filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
-
-            filtered.forEach(r => {
-                let cleanDate = r.date ? r.date.split('T')[0] : '';
-                let tr = document.createElement('tr');
-                let detailsText = `${r.details || ''} ${r.water ? '(Billo: ' + r.water + ')' : ''}`;
-
-                tr.innerHTML = `
-                    <td><strong>${cleanDate}</strong></td>
-                    <td>${r.party || ''}</td>
-                    <td><span style="background-color:#e8f5e9; padding:2px 6px; border-radius:4px; font-weight:500;">${r.leather || '-'}</span></td>
-                    <td>${detailsText}</td>
-                    <td class="no-pdf">
-                        <div class="action-cell">
-                            <button type="button" class="btn-row-edit" title="Edit entry"><i class="fa-solid fa-pen"></i></button>
-                            <button type="button" class="btn-row-delete" title="Delete entry"><i class="fa-solid fa-trash"></i></button>
-                        </div>
-                    </td>
-                `;
-
-                tr.querySelector('.btn-row-edit').onclick = () => populateForm(r);
-                tr.querySelector('.btn-row-delete').onclick = () => { if(confirm("Kya aap delete karna chahte hain?")) deleteFromSheet(r.id); };
-
-                tbody.appendChild(tr);
-            });
-        }
-
-        function populateForm(record) {
-            document.getElementById('inpId').value = record.id || '';
-            document.getElementById('inpDate').value = record.date ? record.date.split('T')[0] : '';
-            document.getElementById('inpParty').value = record.party || '';
-            document.getElementById('inpLeather').value = record.leather || '';
-            document.getElementById('inpWater').value = record.water || '';
-            document.getElementById('inpDetails').value = record.details || '';
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-            showPopup("Data form mein load ho gaya hai!");
-        }
-
-        function clearFormFields() {
-            document.getElementById('inpId').value = "";
-            document.getElementById('inpLeather').value = "";
-            document.getElementById('inpWater').value = "";
-            document.getElementById('inpDetails').value = "";
-            document.getElementById('inpParty').value = "";
-            document.getElementById('inpDate').valueAsDate = new Date();
-        }
-
-        function openDrumWindow(drumName) {
-            selectedDrum = drumName;
-            document.getElementById('entry-header').innerText = drumName;
-            document.getElementById('historyTitleText').innerText = `${drumName} Job History`;
-            document.getElementById('screen-main').classList.remove('active');
-            document.getElementById('screen-entry').classList.add('active');
-
-            clearFormFields();
-            buildHistoryTable(drumName);
-        }
-
-        function showMainScreen() {
-            document.getElementById('screen-entry').classList.remove('active');
-            document.getElementById('screen-main').classList.add('active');
-            generatePartyLiveReport();
-        }
-
-        async function saveToSheet(e) {
-            e.preventDefault();
-            let formId = document.getElementById('inpId').value;
-            let rowId = formId ? formId : new Date().getTime().toString();
-
-            let payload = {
-                action: "save",
-                id: rowId,
+        function save() {
+            let entry = {
+                id: Date.now(),
+                drum: drum,
                 date: document.getElementById('inpDate').value,
-                drum: selectedDrum,
                 party: document.getElementById('inpParty').value,
-                leather: document.getElementById('inpLeather').value,
-                water: document.getElementById('inpWater').value,
-                details: document.getElementById('inpDetails').value
+                leather: document.getElementById('inpLeather').value
             };
-
-            showPopup("Google Sheet me save ho raha hai...");
-            try {
-                await fetch(SCRIPT_URL, { method: "POST", mode: "no-cors", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-                showPopup("Data successfully Saved!");
-                setTimeout(() => { loadSheetData(); showMainScreen(); }, 1200);
-            } catch(err) { showPopup("Net slow hai, dobara save dabayein."); }
+            data.push(entry);
+            localStorage.setItem('tanneryData', JSON.stringify(data));
+            alert("Data Save Ho Gaya!");
+            render();
         }
 
-        async function deleteFromSheet(id) {
-            showPopup("Record delete ho raha hai...");
-            try {
-                await fetch(SCRIPT_URL, { method: "POST", mode: "no-cors", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: "delete", id: id }) });
-                showPopup("Record successfully Deleted!");
-                setTimeout(() => { loadSheetData(); }, 1200);
-            } catch(err) { showPopup("Error! Dobara koshish karein."); }
-        }
-
-        // 2. DOWNLOAD PARTY SPECIFIC REPORT PDF
-        function downloadPartyPDF() {
-            showPopup("Party PDF ban rahi hai...");
-            const btn = document.getElementById('partyPdfBtn');
-            const noPdf = document.querySelectorAll('#partyReportTable .no-pdf');
-            
-            btn.style.display = 'none';
-            noPdf.forEach(el => el.style.display = 'none');
-
-            const element = document.getElementById('partyPdfArea');
-            html2pdf().set({ margin: 10, filename: `Party_Report.pdf`, html2canvas: { scale: 2 }, jsPDF: { format: 'a4' } }).from(element).save().then(() => {
-                btn.style.display = 'flex';
-                noPdf.forEach(el => el.style.display = '');
-                showPopup("Party PDF Downloaded!");
+        function render() {
+            let body = document.getElementById('body');
+            body.innerHTML = "";
+            data.filter(r => r.drum === drum).forEach(r => {
+                body.innerHTML += `<tr><td>${r.date}</td><td>${r.party}</td><td><button onclick="del(${r.id})">Del</button></td></tr>`;
             });
         }
 
-        // 3. DOWNLOAD DRUM SPECIFIC HISTORY PDF
-        function downloadDrumPDF() {
-            showPopup("Drum PDF ban rahi hai...");
-            const btn = document.getElementById('drumPdfBtn');
-            const noPdf = document.querySelectorAll('#historyTable .no-pdf');
-            
-            btn.style.display = 'none';
-            noPdf.forEach(el => el.style.display = 'none');
-
-            const element = document.getElementById('drumPdfArea');
-            html2pdf().set({ margin: 10, filename: `${selectedDrum}_History.pdf`, html2canvas: { scale: 2 }, jsPDF: { format: 'a4' } }).from(element).save().then(() => {
-                btn.style.display = 'flex';
-                noPdf.forEach(el => el.style.display = '');
-                showPopup("Drum PDF Downloaded!");
-            });
+        function del(id) {
+            data = data.filter(r => r.id !== id);
+            localStorage.setItem('tanneryData', JSON.stringify(data));
+            render();
         }
-
-        function showPopup(text) {
-            let t = document.getElementById("toast");
-            t.innerText = text; t.classList.add("show");
-            setTimeout(() => { t.classList.remove("show"); }, 3000);
-        }
-
-        window.onload = loadSheetData;
     </script>
 </body>
 </html>
