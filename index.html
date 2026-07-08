@@ -4,262 +4,257 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Leather Tannery Management</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- FontAwesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        body { background-color: #f4f6f9; padding: 20px; font-family: Arial, sans-serif; }
-        .card { border-radius: 15px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        .card-header { background-color: #2c3e50; color: white; border-top-left-radius: 15px; border-top-right-radius: 15px; }
-        .btn-primary { background-color: #2c3e50; border: none; }
-        .btn-primary:hover { background-color: #1a252f; }
-        .action-btn { cursor: pointer; margin: 0 5px; font-size: 1.2rem; }
-        .btn-edit { color: #ffc107; } 
-        .btn-delete { color: #dc3545; }
-        .table-responsive { background: white; padding: 15px; border-radius: 15px; box-shadow: 0 4px 8px rgba(0,0,0,0.05); }
-    </style>
 </head>
-<body>
+<body class="bg-gray-100 font-sans min-h-screen pb-10">
 
-<div class="container">
-    <h2 class="text-center mb-4 text-dark fw-bold">Leather Tannery Management</h2>
-
-    <div class="card">
-        <div class="card-header fw-bold">
-            <span id="form-title">Add New Drum Record</span>
+    <div class="max-w-4xl mx-auto px-4 py-6">
+        <!-- Header -->
+        <div class="bg-blue-600 text-white p-4 rounded-t-lg shadow-md flex justify-between items-center">
+            <h1 class="text-xl font-bold"><i class="fa-solid fa-industry mr-2"></i> Tannery Drum Entry</h1>
+            <span class="text-sm bg-blue-700 px-3 py-1 rounded-full"><i class="fa-solid fa-calendar-days mr-1"></i> Live System</span>
         </div>
-        <div class="card-body">
-            <form id="tanneryForm">
-                <input type="hidden" id="rowId" name="id">
-                
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label fw-bold">Date</label>
-                        <input type="date" class="form-control" id="date" required>
+
+        <!-- Form Section -->
+        <div class="bg-white p-6 rounded-b-lg shadow-md mb-6">
+            <form id="drumForm" class="space-y-4">
+                <input type="hidden" id="recordId">
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Date -->
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Date</label>
+                        <input type="date" id="date" required class="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
                     </div>
-                    
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label fw-bold">Drum Selection</label>
-                        <select class="form-select" id="drum" required>
+
+                    <!-- Drum Selection -->
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Drum No</label>
+                        <select id="drum" required class="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
                             <option value="">Select Drum</option>
-                            <option value="Drum 1 (Small/Medium)">Drum 1 (Small/Medium)</option>
-                            <option value="Drum 2 (Small/Medium)">Drum 2 (Small/Medium)</option>
-                            <option value="Drum 3 (Small/Medium)">Drum 3 (Small/Medium)</option>
+                            <option value="Drum 1 (Small)">Drum 1 (Small)</option>
+                            <option value="Drum 2 (Small)">Drum 2 (Small)</option>
+                            <option value="Drum 3 (Medium)">Drum 3 (Medium)</option>
                             <option value="Drum 4 (Large)">Drum 4 (Large)</option>
                             <option value="Drum 5 (Large)">Drum 5 (Large)</option>
                             <option value="Drum 6 (Outside)">Drum 6 (Outside)</option>
                         </select>
                     </div>
-                </div>
 
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label fw-bold">Party Name</label>
-                        <input type="text" class="form-control" id="party" placeholder="Enter Party Name" required>
+                    <!-- Party Name -->
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Party Name</label>
+                        <input type="text" id="party" required placeholder="Enter party name" class="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
                     </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label fw-bold">Leather Type / Quantity</label>
-                        <input type="text" class="form-control" id="leather" placeholder="e.g. Cow 100 Pcs" required>
-                    </div>
-                </div>
 
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label fw-bold">Water Liters</label>
-                        <input type="number" class="form-control" id="water" placeholder="e.g. 1500">
+                    <!-- Leather Type / Weight -->
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Leather Description</label>
+                        <input type="text" id="leather" placeholder="e.g., Cow Buff, Goat" class="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
                     </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label fw-bold">Chemical & Process Details</label>
-                        <textarea class="form-control" id="details" rows="2" placeholder="Enter chemical details..."></textarea>
+
+                    <!-- Water Level / Chemical -->
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Water / Chemical Details</label>
+                        <input type="text" id="water" placeholder="e.g., 200L, Chrome" class="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
                     </div>
                 </div>
 
-                <button type="submit" class="btn btn-primary w-100 fw-bold" id="submitBtn">Save Record</button>
-                <button type="button" class="btn btn-secondary w-100 mt-2 fw-bold d-none" id="cancelBtn" onclick="resetForm()">Cancel Edit</button>
+                <!-- Additional Details -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Extra Remarks / Process Details</label>
+                    <textarea id="details" rows="2" placeholder="Write any extra details here..." class="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"></textarea>
+                </div>
+
+                <!-- Submit Buttons -->
+                <div class="flex space-x-3 pt-2">
+                    <button type="submit" id="submitBtn" class="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-2.5 px-4 rounded-lg shadow transition duration-200">
+                        <i class="fa-solid fa-floppy-disk mr-2"></i> Save Record
+                    </button>
+                    <button type="button" id="cancelBtn" class="hidden bg-gray-500 hover:bg-gray-600 text-white font-bold py-2.5 px-4 rounded-lg shadow transition duration-200">
+                        Cancel
+                    </button>
+                </div>
             </form>
+        </div>
+
+        <!-- Data Table Section -->
+        <div class="bg-white rounded-lg shadow-md p-4 overflow-x-auto">
+            <h2 class="text-lg font-bold text-gray-800 mb-3"><i class="fa-solid fa-list-check mr-2"></i> Recent Drum Records</h2>
+            
+            <!-- Loading Indicator -->
+            <div id="loading" class="text-center py-6 text-gray-600 font-medium">
+                <i class="fa-solid fa-spinner fa-spin text-blue-600 text-2xl mr-2"></i> Loading records...
+            </div>
+
+            <!-- Table -->
+            <table id="recordsTable" class="w-full text-sm text-left text-gray-600 hidden">
+                <thead class="text-xs text-gray-700 uppercase bg-gray-100">
+                    <tr>
+                        <th class="p-3">Date</th>
+                        <th class="p-3">Drum</th>
+                        <th class="p-3">Party</th>
+                        <th class="p-3">Leather</th>
+                        <th class="p-3">Water/Chem</th>
+                        <th class="p-3">Details</th>
+                        <th class="p-3 text-center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody" class="divide-y divide-gray-200">
+                    <!-- Data will come here dynamically -->
+                </tbody>
+            </table>
         </div>
     </div>
 
-    <h4 class="mt-4 mb-3 text-secondary fw-bold">All Drum Records</h4>
-    <div class="table-responsive">
-        <table class="table table-hover align-middle">
-            <thead class="table-light">
-                <tr>
-                    <th>Date</th>
-                    <th>Drum</th>
-                    <th>Party</th>
-                    <th>Leather</th>
-                    <th>Water</th>
-                    <th>Details</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody id="dataTableBody">
-                <tr>
-                    <td colspan="7" class="text-center text-muted" id="loadingStatus">Loading records from Google Sheets...</td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-</div>
+    <!-- JavaScript Handling Mobile Support via JSONP -->
+    <script>
+        // Aapka Apps Script link
+        const scriptUrl = 'https://script.google.com/macros/s/AKfycbxeNSBFnChs_kQvXd88Nj4udoMS-yV3uoKITm5VS1Qpu7YROaHhnHxKvbv6XhnlktwNbA/exec';
+        let allRecords = [];
 
-<script>
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbxeNSBFnChs_kQvXd88Nj4udoMS-yV3uoKITm5VS1Qpu7YROaHhnHxKvbv6XhnlktwNbA/exec';
-    let allRecords = [];
+        // Set today's date automatically
+        document.getElementById('date').valueAsDate = new Date();
 
-    // DATA FETCH KARNE KA NYA MOBILE-FRIENDLY TARIKQA (JSONP)
-    function fetchRecords() {
-        document.getElementById("loadingStatus").innerText = "Loading records from Google Sheets...";
-        
-        // Purana script tag delete karne ke liye
-        const oldScript = document.getElementById("jsonpScript");
-        if (oldScript) oldScript.remove();
+        // 1. Fetch Records using JSONP (Mobile Safe)
+        function fetchRecords() {
+            document.getElementById('loading').classList.remove('hidden');
+            document.getElementById('recordsTable').classList.add('hidden');
 
-        // Nya script element banana taake security block na ho
-        const script = document.createElement("script");
-        script.id = "jsonpScript";
-        script.src = `${scriptURL}?action=fetch&callback=handleResponse`;
-        
-        script.onerror = function() {
-            document.getElementById("dataTableBody").innerHTML = `<tr><td colspan="7" class="text-center text-danger">Connection Error! Please check internet or URL.</td></tr>`;
-        };
-        
-        document.body.appendChild(script);
-    }
+            // Old script tags ko remove karna taake memory saaf rahe
+            const oldScript = document.getElementById('jsonpScript');
+            if (oldScript) oldScript.remove();
 
-    // Yeh function data aane par automatic chalega
-    function handleResponse(result) {
-        if (result && result.status === "success") {
-            allRecords = result.data;
-            renderTable(allRecords);
-        } else {
-            document.getElementById("dataTableBody").innerHTML = `<tr><td colspan="7" class="text-center text-muted">No data available.</td></tr>`;
-        }
-    }
-
-    function renderTable(data) {
-        const tbody = document.getElementById("dataTableBody");
-        tbody.innerHTML = "";
-        
-        if (data.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted">No records found.</td></tr>`;
-            return;
+            // Naya JSONP script tag banana jo mobile browser block na kare
+            const script = document.createElement('script');
+            script.id = 'jsonpScript';
+            script.src = `${scriptUrl}?action=fetch&callback=handleFetchResponse`;
+            document.body.appendChild(script);
         }
 
-        data.forEach(row => {
-            let formattedDate = row.date;
-            if(row.date && row.date.includes("T")) {
-                formattedDate = row.date.split("T")[0];
+        // 2. Handle JSONP Response
+        function handleFetchResponse(response) {
+            document.getElementById('loading').classList.add('hidden');
+            const table = document.getElementById('recordsTable');
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+
+            if (response.status === 'success' && response.data.length > 0) {
+                allRecords = response.data;
+                table.classList.remove('hidden');
+
+                response.data.forEach(row => {
+                    // Date Format standard karna
+                    let displayDate = row.date;
+                    if(row.date && row.date.includes('T')) {
+                        displayDate = row.date.split('T')[0];
+                    }
+
+                    const tr = document.createElement('tr');
+                    tr.className = "hover:bg-gray-50 transition";
+                    tr.innerHTML = `
+                        <td class="p-3 font-medium text-gray-900">${displayDate || ''}</td>
+                        <td class="p-3">${row.drum || ''}</td>
+                        <td class="p-3 font-semibold text-blue-700">${row.party || ''}</td>
+                        <td class="p-3">${row.leather || ''}</td>
+                        <td class="p-3">${row.water || ''}</td>
+                        <td class="p-3 text-xs max-w-xs truncate">${row.details || ''}</td>
+                        <td class="p-3 text-center space-x-2 whitespace-nowrap">
+                            <button onclick="editRecord('${row.id}')" class="text-yellow-600 hover:text-yellow-700 bg-yellow-50 p-1.5 rounded" title="Edit"><i class="fa-solid fa-pen"></i></button>
+                            <button onclick="deleteRecord('${row.id}')" class="text-red-600 hover:text-red-700 bg-red-50 p-1.5 rounded" title="Delete"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } else {
+                document.getElementById('loading').innerHTML = `<i class="fa-solid fa-circle-info text-gray-400 mr-2"></i> No records found or setup incomplete.`;
             }
+        }
 
-            const tr = document.createElement("tr");
-            tr.innerHTML = `
-                <td>${formattedDate || ''}</td>
-                <td><span class="badge bg-secondary">${row.drum || ''}</span></td>
-                <td><strong>${row.party || ''}</strong></td>
-                <td>${row.leather || ''}</td>
-                <td>${row.water ? row.water + ' L' : '-'}</td>
-                <td><small>${row.details || ''}</small></td>
-                <td>
-                    <i class="fa-solid fa-pen action-btn btn-edit" onclick="editRecord('${row.id}')" title="Edit"></i>
-                    <i class="fa-solid fa-trash action-btn btn-delete" onclick="deleteRecord('${row.id}')" title="Delete"></i>
-                </td>
-            `;
-            tbody.appendChild(tr);
+        // 3. Save / Update Record
+        document.getElementById('drumForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-2"></i> Saving...`;
+
+            const id = document.getElementById('recordId').value || 'ID-' + Date.now();
+            const data = {
+                action: 'save',
+                id: id,
+                date: document.getElementById('date').value,
+                drum: document.getElementById('drum').value,
+                party: document.getElementById('party').value,
+                leather: document.getElementById('leather').value,
+                water: document.getElementById('water').value,
+                details: document.getElementById('details').value
+            };
+
+            fetch(scriptUrl, {
+                method: 'POST',
+                mode: 'no-cors', // Mobile safety mode
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            }).then(() => {
+                alert('Record sent successfully!');
+                resetForm();
+                setTimeout(fetchRecords, 2000); // 2 second baad data refresh
+            }).catch(err => {
+                alert('Error: ' + err);
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = `<i class="fa-solid fa-floppy-disk mr-2"></i> Save Record`;
+            });
         });
-    }
 
-    document.getElementById("tanneryForm").addEventListener("submit", function(e) {
-        e.preventDefault();
-        
-        const submitBtn = document.getElementById("submitBtn");
-        submitBtn.disabled = true;
-        submitBtn.innerText = "Saving...";
+        // Edit Function
+        window.editRecord = function(id) {
+            const record = allRecords.find(r => r.id.toString() === id.toString());
+            if (record) {
+                document.getElementById('recordId').value = record.id;
+                if(record.date) document.getElementById('date').value = record.date.split('T')[0];
+                document.getElementById('drum').value = record.drum || '';
+                document.getElementById('party').value = record.party || '';
+                document.getElementById('leather').value = record.leather || '';
+                document.getElementById('water').value = record.water || '';
+                document.getElementById('details').value = record.details || '';
 
-        let id = document.getElementById("rowId").value;
-        if (!id) { id = "ID-" + Date.now(); }
-
-        const payload = {
-            action: "save",
-            id: id,
-            date: document.getElementById("date").value,
-            drum: document.getElementById("drum").value,
-            party: document.getElementById("party").value,
-            leather: document.getElementById("leather").value,
-            water: document.getElementById("water").value,
-            details: document.getElementById("details").value
+                document.getElementById('submitBtn').innerHTML = `<i class="fa-solid fa-pen-to-square mr-2"></i> Update Record`;
+                document.getElementById('cancelBtn').classList.remove('hidden');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
         };
 
-        // Mobile browsers ke liye best method data bhejne ka
-        fetch(scriptURL, {
-            method: 'POST',
-            mode: 'no-cors',
-            headers: { 'Content-Type': 'text/plain' },
-            body: JSON.stringify(payload)
-        })
-        .then(() => {
-            alert("Record processed successfully!");
-            resetForm();
-            setTimeout(fetchRecords, 1500); // Save hone ke baad automatic list refresh hogi
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert("Error saving record, trying to refresh list...");
-            resetForm();
-            setTimeout(fetchRecords, 1500);
-        });
-    });
+        // Delete Function
+        window.deleteRecord = function(id) {
+            if (confirm('Are you sure you want to delete this record?')) {
+                fetch(scriptUrl, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'delete', id: id })
+                }).then(() => {
+                    alert('Record deleted!');
+                    setTimeout(fetchRecords, 1500);
+                });
+            }
+        };
 
-    function editRecord(id) {
-        const record = allRecords.find(r => r.id.toString() === id.toString());
-        if (!record) return;
-
-        document.getElementById("rowId").value = record.id;
-        if(record.date && record.date.includes("T")) {
-            document.getElementById("date").value = record.date.split("T")[0];
-        } else {
-            document.getElementById("date").value = record.date;
+        function resetForm() {
+            document.getElementById('drumForm').reset();
+            document.getElementById('recordId').value = '';
+            document.getElementById('date').valueAsDate = new Date();
+            document.getElementById('submitBtn').innerHTML = `<i class="fa-solid fa-floppy-disk mr-2"></i> Save Record`;
+            document.getElementById('submitBtn').disabled = false;
+            document.getElementById('cancelBtn').class= 'hidden';
         }
-        document.getElementById("drum").value = record.drum;
-        document.getElementById("party").value = record.party;
-        document.getElementById("leather").value = record.leather;
-        document.getElementById("water").value = record.water;
-        document.getElementById("details").value = record.details;
 
-        document.getElementById("form-title").innerText = "Edit Drum Record";
-        document.getElementById("submitBtn").innerText = "Update Record";
-        document.getElementById("cancelBtn").classList.remove("d-none");
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
+        document.getElementById('cancelBtn').addEventListener('click', resetForm);
 
-    function resetForm() {
-        document.getElementById("tanneryForm").reset();
-        document.getElementById("rowId").value = "";
-        document.getElementById("form-title").innerText = "Add New Drum Record";
-        document.getElementById("submitBtn").innerText = "Save Record";
-        document.getElementById("submitBtn").disabled = false;
-        document.getElementById("cancelBtn").classList.add("d-none");
-    }
-
-    function deleteRecord(id) {
-        if (confirm("Kya aap sach mein delete karna chahte hain?")) {
-            fetch(scriptURL, {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: { 'Content-Type': 'text/plain' },
-                body: JSON.stringify({ action: "delete", id: id })
-            })
-            .then(() => {
-                alert("Record deleted!");
-                setTimeout(fetchRecords, 1500);
-            })
-            .catch(error => {
-                setTimeout(fetchRecords, 1500);
-            });
-        }
-    }
-
-    // Page load hote hi data mangwayein
-    window.onload = fetchRecords;
-</script>
+        // App load hote hi data fetch karein
+        window.onload = fetchRecords;
+    </script>
 </body>
 </html>
