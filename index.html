@@ -9,26 +9,22 @@
     <style>
         body { font-family: sans-serif; padding: 10px; background: #fdfdfd; }
         .screen { display: none; } .active { display: block; }
-        .report-box { background: #dcedc8; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
         .drum-btn { width: 100%; padding: 20px; margin-bottom: 10px; border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; background: #4caf50; }
-        input, textarea { width: 100%; padding: 10px; margin: 5px 0; border: 1px solid #ccc; box-sizing: border-box; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 11px; }
-        th { background: #2e7d32; color: white; padding: 5px; }
-        td { border: 1px solid #ddd; padding: 5px; text-align: center; }
-        .btn-edit { background: #ffca28; border: none; padding: 5px; cursor: pointer; border-radius: 4px; margin-right: 5px; }
-        .btn-del { background: #e53935; color: white; border: none; padding: 5px; cursor: pointer; border-radius: 4px; }
+        input, textarea { width: 100%; padding: 12px; margin: 5px 0; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 12px; }
+        th { background: #2e7d32; color: white; padding: 8px; }
+        td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+        .btn-edit { background: #ffca28; border: none; padding: 8px; border-radius: 4px; cursor: pointer; }
+        .btn-del { background: #e53935; color: white; border: none; padding: 8px; border-radius: 4px; cursor: pointer; }
     </style>
 </head>
 <body>
 
-    <!-- Main Screen -->
+    <!-- Dashboard -->
     <div id="main-screen" class="screen active">
         <h3>TANNERY DRUMS</h3>
-        <div class="report-box">
-            <label>Party Drum Detail Report:</label>
-            <input type="text" id="reportSearch" placeholder="Party ka naam likhein..." oninput="showReport()">
-            <div id="reportResult"></div>
-        </div>
+        <input type="text" id="reportSearch" placeholder="Party Drum Detail Report..." oninput="showReport()" style="margin-bottom:15px;">
+        <div id="reportResult"></div>
         <button class="drum-btn" onclick="openEntry('Drum 1 M')">Drum 1 M</button>
         <button class="drum-btn" onclick="openEntry('Drum 2 M')">Drum 2 M</button>
         <button class="drum-btn" onclick="openEntry('Drum 3 M')">Drum 3 M</button>
@@ -45,8 +41,8 @@
         <input type="text" id="water" placeholder="Billo Pani (Amount)">
         <textarea id="details" placeholder="Chemicals Detail"></textarea>
         <input type="date" id="date">
-        <button onclick="saveData()" style="width:100%; padding:12px; background:#2e7d32; color:white; border:none;">Save Karein</button>
-        <button onclick="goBack()" style="width:100%; padding:12px; margin-top:5px;">Wapas</button>
+        <button onclick="saveData()" style="width:100%; padding:12px; background:#2e7d32; color:white; border:none; border-radius:6px;">Save Karein</button>
+        <button onclick="goBack()" style="width:100%; padding:12px; margin-top:10px; background:#757575; color:white; border:none; border-radius:6px;">Wapas</button>
         
         <table id="histTable">
             <thead><tr><th>Date</th><th>Party</th><th>Leather</th><th>Pani</th><th>Details</th><th>Action</th></tr></thead>
@@ -80,13 +76,29 @@
             body.innerHTML = "";
             data.filter(x => x.drum === currentDrum).forEach(x => {
                 body.innerHTML += `<tr><td>${x.date}</td><td>${x.party}</td><td>${x.leather}</td><td>${x.water}</td><td>${x.details}</td>
-                <td><button class="btn-edit" onclick="alert('Edit feature: Party ${x.party} select ki gayi hai')"><i class="fa fa-pen"></i></button> 
-                <button class="btn-del" onclick="deleteItem(${x.id})"><i class="fa fa-trash"></i></button></td></tr>`;
+                <td><button class="btn-edit" onclick="editItem(${x.id})"><i class="fa fa-pen"></i></button> <button class="btn-del" onclick="deleteItem(${x.id})"><i class="fa fa-trash"></i></button></td></tr>`;
             });
         }
 
+        function editItem(id) {
+            let item = data.find(x => x.id === id);
+            document.getElementById('party').value = item.party;
+            document.getElementById('leather').value = item.leather;
+            document.getElementById('water').value = item.water;
+            document.getElementById('details').value = item.details;
+            document.getElementById('date').value = item.date;
+            deleteItem(id);
+        }
+
         function deleteItem(id) { data = data.filter(x => x.id !== id); localStorage.setItem('tanneryData', JSON.stringify(data)); renderTable(); }
-        // ... (showReport and downloadPDF functions same as before)
+
+        function showReport() {
+            let val = document.getElementById('reportSearch').value.toLowerCase();
+            let res = data.filter(x => x.party.toLowerCase().includes(val));
+            let html = `<table id="repTable"><thead><tr><th>Date</th><th>Party</th><th>Drum</th></tr></thead><tbody>`;
+            res.forEach(x => html += `<tr><td>${x.date}</td><td>${x.party}</td><td>${x.drum}</td></tr>`);
+            document.getElementById('reportResult').innerHTML = val ? html + `</tbody></table>` : "";
+        }
     </script>
 </body>
 </html>
