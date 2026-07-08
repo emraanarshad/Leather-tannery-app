@@ -1,81 +1,87 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tannery App</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        body { font-family: sans-serif; padding: 15px; background: #f4f6f8; }
-        .btn { width: 100%; padding: 20px; margin-bottom: 10px; border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; }
-        .drum-btn { background: #4caf50; }
-        input, textarea { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
+        body { font-family: sans-serif; padding: 10px; background: #f4f6f8; }
+        .report-box { background: #dcedc8; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #c5e1a5; }
+        .drum-btn { width: 100%; padding: 20px; margin-bottom: 10px; border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; background: #4caf50; }
+        .btn-edit { background: #ffca28; border: none; padding: 8px; border-radius: 4px; cursor: pointer; }
+        .btn-del { background: #e53935; border: none; padding: 8px; border-radius: 4px; cursor: pointer; color: white; }
         table { width: 100%; border-collapse: collapse; margin-top: 10px; background: white; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
     </style>
 </head>
 <body>
-    <div id="main">
+
+    <!-- Pehli Screen -->
+    <div id="main-screen">
         <h3>Tannery Drums</h3>
-        <button class="btn drum-btn" onclick="openEntry('Drum 1 M')">Drum 1 M</button>
-        <button class="btn drum-btn" onclick="openEntry('Drum 2 M')">Drum 2 M</button>
-        <button class="btn drum-btn" onclick="openEntry('Drum 3 M')">Drum 3 M</button>
-        <button class="btn drum-btn" onclick="openEntry('Drum 4 L')">Drum 4 L (Large)</button>
-        <button class="btn drum-btn" onclick="openEntry('Drum 5 L')">Drum 5 L (Large)</button>
-        <button class="btn drum-btn" style="background:#ff9800" onclick="openEntry('Drum 6 Outside')">Drum 6 Outside</button>
+        <div class="report-box">
+            <label>Party Drum Detail Report:</label>
+            <input type="text" id="searchParty" placeholder="Party Ka Naam Likhein..." style="width:100%; padding:10px; margin-top:5px; border-radius:5px; border:1px solid #ccc;">
+        </div>
+        <button class="drum-btn" onclick="openDrum('Drum 1')">Drum 1 M</button>
+        <button class="drum-btn" onclick="openDrum('Drum 2')">Drum 2 M</button>
+        <button class="drum-btn" onclick="openDrum('Drum 3')">Drum 3 M</button>
+        <button class="drum-btn" onclick="openDrum('Drum 4')">Drum 4 L (Large)</button>
+        <button class="drum-btn" onclick="openDrum('Drum 5')">Drum 5 L (Large)</button>
+        <button class="drum-btn" style="background:#ff9800" onclick="openDrum('Drum 6')">Drum 6 Outside</button>
     </div>
 
-    <div id="entry" style="display:none;">
-        <h3 id="title">Drum Details</h3>
-        <input type="text" id="inpParty" placeholder="Party Name">
-        <input type="text" id="inpLeather" placeholder="Leather Type">
-        <input type="date" id="inpDate">
-        <button class="btn" style="background:#2e7d32" onclick="save()">Save Karein</button>
-        <button class="btn" style="background:#757575" onclick="showMain()">Wapas</button>
-        <table><thead><tr><th>Date</th><th>Party</th><th>Action</th></tr></thead><tbody id="body"></tbody></table>
+    <!-- Dusri Screen (Entry) -->
+    <div id="entry-screen" style="display:none;">
+        <h3 id="drum-title"></h3>
+        <input type="text" id="party" placeholder="Party Name" style="width:100%; padding:10px; margin-bottom:5px;">
+        <button onclick="saveData()" style="padding:10px; width:100%; background:#2e7d32; color:white; border:none; border-radius:5px;">Save Karein</button>
+        <button onclick="document.getElementById('main-screen').style.display='block'; document.getElementById('entry-screen').style.display='none';" style="padding:10px; width:100%; margin-top:10px;">Wapas</button>
+        <table>
+            <thead><tr><th>Party</th><th>Action</th></tr></thead>
+            <tbody id="data-body"></tbody>
+        </table>
     </div>
 
     <script>
-        let drum = "";
         let data = JSON.parse(localStorage.getItem('tanneryData')) || [];
+        let currentDrum = "";
 
-        function openEntry(name) {
-            drum = name;
-            document.getElementById('title').innerText = name;
-            document.getElementById('main').style.display = 'none';
-            document.getElementById('entry').style.display = 'block';
-            render();
+        function openDrum(name) {
+            currentDrum = name;
+            document.getElementById('drum-title').innerText = name;
+            document.getElementById('main-screen').style.display = 'none';
+            document.getElementById('entry-screen').style.display = 'block';
+            renderTable();
         }
 
-        function showMain() {
-            document.getElementById('main').style.display = 'block';
-            document.getElementById('entry').style.display = 'none';
-        }
-
-        function save() {
-            let entry = {
-                id: Date.now(),
-                drum: drum,
-                date: document.getElementById('inpDate').value,
-                party: document.getElementById('inpParty').value,
-                leather: document.getElementById('inpLeather').value
-            };
-            data.push(entry);
+        function saveData() {
+            let p = document.getElementById('party').value;
+            data.push({ id: Date.now(), drum: currentDrum, party: p });
             localStorage.setItem('tanneryData', JSON.stringify(data));
-            alert("Data Save Ho Gaya!");
-            render();
+            document.getElementById('party').value = "";
+            renderTable();
         }
 
-        function render() {
-            let body = document.getElementById('body');
+        function renderTable() {
+            let body = document.getElementById('data-body');
             body.innerHTML = "";
-            data.filter(r => r.drum === drum).forEach(r => {
-                body.innerHTML += `<tr><td>${r.date}</td><td>${r.party}</td><td><button onclick="del(${r.id})">Del</button></td></tr>`;
+            data.filter(x => x.drum === currentDrum).forEach(x => {
+                body.innerHTML += `<tr>
+                    <td>${x.party}</td>
+                    <td>
+                        <button class="btn-edit"><i class="fa fa-pen"></i></button>
+                        <button class="btn-del" onclick="deleteItem(${x.id})"><i class="fa fa-trash"></i></button>
+                    </td>
+                </tr>`;
             });
         }
 
-        function del(id) {
-            data = data.filter(r => r.id !== id);
+        function deleteItem(id) {
+            data = data.filter(x => x.id !== id);
             localStorage.setItem('tanneryData', JSON.stringify(data));
-            render();
+            renderTable();
         }
     </script>
 </body>
