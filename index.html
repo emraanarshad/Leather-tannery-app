@@ -95,7 +95,7 @@
             </thead>
             <tbody id="dataTableBody">
                 <tr>
-                    <td colspan="7" class="text-center text-muted">Loading records from Google Sheets...</td>
+                    <td colspan="7" class="text-center text-muted" id="loadingStatus">Loading records from Google Sheets...</td>
                 </tr>
             </tbody>
         </table>
@@ -103,23 +103,37 @@
 </div>
 
 <script>
-    // Aapka naya link maine yahan khud shamil kar diya hai
     const scriptURL = 'https://script.google.com/macros/s/AKfycbxeNSBFnChs_kQvXd88Nj4udoMS-yV3uoKITm5VS1Qpu7YROaHhnHxKvbv6XhnlktwNbA/exec';
     let allRecords = [];
 
+    // DATA FETCH KARNE KA NYA MOBILE-FRIENDLY TARIKQA (JSONP)
     function fetchRecords() {
-        fetch(`${scriptURL}?action=fetch`)
-            .then(response => response.json())
-            .then(result => {
-                if (result.status === "success") {
-                    allRecords = result.data;
-                    renderTable(allRecords);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                document.getElementById("dataTableBody").innerHTML = `<tr><td colspan="7" class="text-center text-muted">Abhi koi record nahi mila. Naya record save karein!</td></tr>`;
-            });
+        document.getElementById("loadingStatus").innerText = "Loading records from Google Sheets...";
+        
+        // Purana script tag delete karne ke liye
+        const oldScript = document.getElementById("jsonpScript");
+        if (oldScript) oldScript.remove();
+
+        // Nya script element banana taake security block na ho
+        const script = document.createElement("script");
+        script.id = "jsonpScript";
+        script.src = `${scriptURL}?action=fetch&callback=handleResponse`;
+        
+        script.onerror = function() {
+            document.getElementById("dataTableBody").innerHTML = `<tr><td colspan="7" class="text-center text-danger">Connection Error! Please check internet or URL.</td></tr>`;
+        };
+        
+        document.body.appendChild(script);
+    }
+
+    // Yeh function data aane par automatic chalega
+    function handleResponse(result) {
+        if (result && result.status === "success") {
+            allRecords = result.data;
+            renderTable(allRecords);
+        } else {
+            document.getElementById("dataTableBody").innerHTML = `<tr><td colspan="7" class="text-center text-muted">No data available.</td></tr>`;
+        }
     }
 
     function renderTable(data) {
@@ -175,23 +189,23 @@
             details: document.getElementById("details").value
         };
 
+        // Mobile browsers ke liye best method data bhejne ka
         fetch(scriptURL, {
             method: 'POST',
+            mode: 'no-cors',
             headers: { 'Content-Type': 'text/plain' },
             body: JSON.stringify(payload)
         })
-        .then(res => res.json())
-        .then(response => {
-            if(response.status === "success") {
-                alert("Record successfully saved!");
-                resetForm();
-                fetchRecords();
-            }
+        .then(() => {
+            alert("Record processed successfully!");
+            resetForm();
+            setTimeout(fetchRecords, 1500); // Save hone ke baad automatic list refresh hogi
         })
         .catch(error => {
-            alert("Record processed!");
+            console.error('Error:', error);
+            alert("Error saving record, trying to refresh list...");
             resetForm();
-            setTimeout(fetchRecords, 1000);
+            setTimeout(fetchRecords, 1500);
         });
     });
 
@@ -230,19 +244,21 @@
         if (confirm("Kya aap sach mein delete karna chahte hain?")) {
             fetch(scriptURL, {
                 method: 'POST',
+                mode: 'no-cors',
                 headers: { 'Content-Type': 'text/plain' },
                 body: JSON.stringify({ action: "delete", id: id })
             })
             .then(() => {
-                alert("Record successfully deleted!");
-                setTimeout(fetchRecords, 1000);
+                alert("Record deleted!");
+                setTimeout(fetchRecords, 1500);
             })
             .catch(error => {
-                setTimeout(fetchRecords, 1000);
+                setTimeout(fetchRecords, 1500);
             });
         }
     }
 
+    // Page load hote hi data mangwayein
     window.onload = fetchRecords;
 </script>
 </body>
