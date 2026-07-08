@@ -103,6 +103,7 @@
 </div>
 
 <script>
+    // Aapka naya link maine yahan khud shamil kar diya hai
     const scriptURL = 'https://script.google.com/macros/s/AKfycbxeNSBFnChs_kQvXd88Nj4udoMS-yV3uoKITm5VS1Qpu7YROaHhnHxKvbv6XhnlktwNbA/exec';
     let allRecords = [];
 
@@ -176,7 +177,7 @@
 
         fetch(scriptURL, {
             method: 'POST',
-            headers: { 'Content-Type': 'text/plain' }, // Fixed mobile CORS block
+            headers: { 'Content-Type': 'text/plain' },
             body: JSON.stringify(payload)
         })
         .then(res => res.json())
@@ -188,7 +189,6 @@
             }
         })
         .catch(error => {
-            // Backup refetch agar redirect issue ho
             alert("Record processed!");
             resetForm();
             setTimeout(fetchRecords, 1000);
