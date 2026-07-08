@@ -7,20 +7,21 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
-        body { font-family: sans-serif; padding: 15px; background: #fdfdfd; }
+        body { font-family: sans-serif; padding: 10px; background: #fdfdfd; }
         .screen { display: none; } .active { display: block; }
         .report-box { background: #dcedc8; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
         .drum-btn { width: 100%; padding: 20px; margin-bottom: 10px; border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; background: #4caf50; }
         input, textarea { width: 100%; padding: 10px; margin: 5px 0; border: 1px solid #ccc; box-sizing: border-box; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; }
         th { background: #2e7d32; color: white; padding: 8px; }
         td { border: 1px solid #ddd; padding: 8px; text-align: center; }
-        .btn-del { background: #e53935; color: white; border: none; padding: 5px; cursor: pointer; }
+        .btn-edit { background: #ffca28; border: none; padding: 5px; cursor: pointer; border-radius: 4px; }
+        .btn-del { background: #e53935; color: white; border: none; padding: 5px; cursor: pointer; border-radius: 4px; }
     </style>
 </head>
 <body>
 
-    <!-- Screen 1: Dashboard -->
+    <!-- Dashboard -->
     <div id="main-screen" class="screen active">
         <h3>TANNERY DRUMS</h3>
         <div class="report-box">
@@ -36,7 +37,7 @@
         <button class="drum-btn" style="background:#ff9800" onclick="openEntry('Drum 6 Outside')">Drum 6 Outside</button>
     </div>
 
-    <!-- Screen 2: Data Entry -->
+    <!-- Entry Screen -->
     <div id="entry-screen" class="screen">
         <h3 id="drum-title"></h3>
         <input type="text" id="party" placeholder="Party Name">
@@ -44,9 +45,13 @@
         <input type="text" id="water" placeholder="Billo Pani (Amount)">
         <textarea id="details" placeholder="Chemicals Detail"></textarea>
         <input type="date" id="date">
-        <button onclick="saveData()" style="width:100%; padding:12px; background:#2e7d32; color:white;">Save Karein</button>
+        <button onclick="saveData()" style="width:100%; padding:12px; background:#2e7d32; color:white; border:none; margin-top:5px;">Save Karein</button>
         <button onclick="goBack()" style="width:100%; padding:12px; margin-top:5px;">Wapas</button>
-        <table id="histTable"><thead><tr><th>Date</th><th>Party</th><th>Action</th></tr></thead><tbody id="data-body"></tbody></table>
+        
+        <table id="histTable">
+            <thead><tr><th>Date</th><th>Party</th><th>Leather</th><th>Details</th><th>Action</th></tr></thead>
+            <tbody id="data-body"></tbody>
+        </table>
     </div>
 
     <script>
@@ -68,7 +73,7 @@
         }
 
         function saveData() {
-            data.push({ id: Date.now(), drum: currentDrum, date: document.getElementById('date').value, party: document.getElementById('party').value });
+            data.push({ id: Date.now(), drum: currentDrum, date: document.getElementById('date').value, party: document.getElementById('party').value, leather: document.getElementById('leather').value, water: document.getElementById('water').value, details: document.getElementById('details').value });
             localStorage.setItem('tanneryData', JSON.stringify(data));
             renderTable();
         }
@@ -77,7 +82,7 @@
             let body = document.getElementById('data-body');
             body.innerHTML = "";
             data.filter(x => x.drum === currentDrum).forEach(x => {
-                body.innerHTML += `<tr><td>${x.date}</td><td>${x.party}</td><td><button class="btn-del" onclick="deleteItem(${x.id})">Del</button></td></tr>`;
+                body.innerHTML += `<tr><td>${x.date}</td><td>${x.party}</td><td>${x.leather}</td><td>${x.details}</td><td><button class="btn-edit"><i class="fa fa-pen"></i></button> <button class="btn-del" onclick="deleteItem(${x.id})"><i class="fa fa-trash"></i></button></td></tr>`;
             });
         }
 
@@ -88,7 +93,7 @@
             let res = data.filter(x => x.party.toLowerCase().includes(val));
             let html = `<table id="repTable"><thead><tr><th>Date</th><th>Drum</th><th>Party</th></tr></thead><tbody>`;
             res.forEach(x => html += `<tr><td>${x.date}</td><td>${x.drum}</td><td>${x.party}</td></tr>`);
-            html += `</tbody></table><button onclick="downloadPDF()" style="width:100%; margin-top:5px; background:#d32f2f; color:white;">Download PDF</button>`;
+            html += `</tbody></table><button onclick="downloadPDF()" style="width:100%; margin-top:5px; background:#d32f2f; color:white; border:none; padding:10px;">Download PDF</button>`;
             document.getElementById('reportResult').innerHTML = val ? html : "";
         }
 
