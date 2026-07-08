@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tannery Drums</title>
+    <title>Tannery Drums Management</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#2e7d32">
     <!-- FontAwesome for Icons -->
@@ -53,22 +53,21 @@
             gap: 10px;
             margin-bottom: 10px;
         }
-        .report-grid select, .report-grid input {
+        .report-grid input {
             flex: 1;
-            padding: 10px;
+            padding: 12px;
             border-radius: 6px;
             border: 1px solid #999;
             font-size: 0.95rem;
         }
-        .report-result {
-            font-size: 1.1rem;
-            font-weight: bold;
-            color: #1b5e20;
-            text-align: center;
-            margin-top: 5px;
+        
+        /* LIVE PARTY REPORT TABLE */
+        .report-table-section {
+            margin-top: 15px;
             background: white;
-            padding: 8px;
-            border-radius: 6px;
+            border-radius: 8px;
+            padding: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }
 
         .drum-list {
@@ -156,7 +155,7 @@
             margin-bottom: 15px;
         }
         .btn-pdf {
-            background: #0288d1;
+            background: #d32f2f; /* Red PDF button */
             color: white;
             border: none;
             width: 100%;
@@ -203,7 +202,7 @@
             align-items: center;
         }
         .btn-row-edit {
-            background-color: #ffca28; /* Golden Yellow */
+            background-color: #ffca28; /* Golden Yellow Pen Button */
             color: #000;
             border: none;
             padding: 8px 12px;
@@ -212,7 +211,7 @@
             font-size: 0.95rem;
         }
         .btn-row-delete {
-            background-color: #e53935; /* Alert Red */
+            background-color: #e53935; /* Alert Red Delete Button */
             color: white;
             border: none;
             padding: 8px 12px;
@@ -246,24 +245,40 @@
 </head>
 <body>
 
-    <!-- SCREEN 1: MAIN DRUMS WINDOW + PARTY SEARCH -->
+    <!-- SCREEN 1: MAIN DRUMS WINDOW + PARTY SEARCH WITH FULL LIVE TABLE REPORT -->
     <div id="screen-main" class="screen active">
         <div class="header">Tannery Drums</div>
         
         <div class="report-card">
-            <strong style="color:#1b5e20; display:block; margin-bottom:8px;"><i class="fa-solid fa-chart-simple"></i> Party Drum Usage Report:</strong>
+            <strong style="color:#1b5e20; display:block; margin-bottom:8px;"><i class="fa-solid fa-chart-simple"></i> Party Drum Detail Report:</strong>
             <div class="report-grid">
-                <input type="text" id="searchPartyName" placeholder="Party Ka Naam Likhein" oninput="calculatePartyReport()">
-                <select id="searchDaysLimit" onchange="calculatePartyReport()">
-                    <option value="7">Last 7 Din</option>
-                    <option value="15">Last 15 Din</option>
-                    <option value="30">Last 30 Din</option>
-                    <option value="all" selected>Kul Record (All)</option>
-                </select>
+                <input type="text" id="searchPartyName" placeholder="Party Ka Naam Likhein..." oninput="generatePartyLiveReport()">
             </div>
-            <div class="report-result" id="reportResultText">Party naam likh kar check karein</div>
+            
+            <!-- Dynamic Party Wise History Table Inside Main Screen -->
+            <div id="partyReportSection" class="report-table-section" style="display:none;">
+                <button class="btn-pdf" type="button" id="partyPdfBtn" onclick="downloadPartyPDF()">
+                    <i class="fa-solid fa-file-pdf"></i> Download Party Report PDF
+                </button>
+                <div class="table-responsive" id="partyPdfArea">
+                    <h4 id="partyReportTitle" style="margin: 5px 0 10px 0; color: #1b5e20;"></h4>
+                    <table id="partyReportTable">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Drum</th>
+                                <th>Leather</th>
+                                <th>Details</th>
+                                <th class="no-pdf">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="partyReportTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
         </div>
 
+        <!-- Correct Complete 6 Drums Configuration -->
         <div class="drum-list">
             <button class="drum-btn" id="btn-Drum 1 M" onclick="openDrumWindow('Drum 1 M')">Drum 1 M</button>
             <button class="drum-btn" id="btn-Drum 2 M" onclick="openDrumWindow('Drum 2 M')">Drum 2 M</button>
@@ -302,10 +317,11 @@
             </div>
         </form>
 
-        <div class="history-section" id="pdfArea">
+        <!-- DRUM SPECIFIC HISTORY WITH PDF DOWNLOAD -->
+        <div class="history-section" id="drumPdfArea">
             <div class="history-title" id="historyTitleText">Drum Job History</div>
-            <button class="btn-pdf" type="button" id="pdfBtn" onclick="downloadPDFHistory()">
-                <i class="fa-solid fa-file-pdf"></i> Download PDF History
+            <button class="btn-pdf" type="button" id="drumPdfBtn" onclick="downloadDrumPDF()">
+                <i class="fa-solid fa-file-pdf"></i> Download Drum History PDF
             </button>
             
             <div class="table-responsive">
@@ -334,7 +350,7 @@
 
         document.getElementById('inpDate').valueAsDate = new Date();
 
-        // Background loading to avoid history display delays
+        // Background loading to avoid data delay
         async function loadSheetData() {
             try {
                 let res = await fetch(`${SCRIPT_URL}?action=fetch`);
@@ -342,7 +358,7 @@
                 if(json.status === "success") {
                     sheetRecords = json.data;
                     updateMainButtons();
-                    calculatePartyReport();
+                    generatePartyLiveReport();
                     if(document.getElementById('screen-entry').classList.contains('active')) {
                         buildHistoryTable(selectedDrum);
                     }
@@ -350,52 +366,74 @@
             } catch(e) { console.log("Load Error", e); }
         }
 
-        function calculatePartyReport() {
+        // 1. IMPROVED PARTY DETAIL REPORT FUNCTION WITH DATE WISE LIST
+        function generatePartyLiveReport() {
             let searchName = document.getElementById('searchPartyName').value.trim().toLowerCase();
-            let daysLimit = document.getElementById('searchDaysLimit').value;
-            let resultBox = document.getElementById('reportResultText');
+            let reportSection = document.getElementById('partyReportSection');
+            let tbody = document.getElementById('partyReportTableBody');
+            let title = document.getElementById('partyReportTitle');
 
             if(!searchName) {
-                resultBox.innerText = "Party naam likh kar check karein";
+                reportSection.style.display = "none";
                 return;
             }
 
-            let count = 0;
-            let now = new Date();
+            // Filter Records for requested Party
+            let filtered = sheetRecords.filter(r => r.party && r.party.toLowerCase().includes(searchName));
+            
+            if(filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#999;">Is Naam Ka Koi Record Nahi Mila</td></tr>`;
+                title.innerText = `Party: ${document.getElementById('searchPartyName').value}`;
+                reportSection.style.display = "block";
+                document.getElementById('partyPdfBtn').style.display = "none";
+                return;
+            }
 
-            sheetRecords.forEach(r => {
-                if(r.party && r.party.toLowerCase().includes(searchName)) {
-                    if(daysLimit === "all") {
-                        count++;
-                    } else {
-                        let recordDate = new Date(r.date);
-                        let diffTime = Math.abs(now - recordDate);
-                        let diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                        if(diffDays <= parseInt(daysLimit)) {
-                            count++;
-                        }
-                    }
-                }
+            // Date Wise sorting (Latest on Top)
+            filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            title.innerText = `Record List for: ${filtered[0].party}`;
+            tbody.innerHTML = "";
+
+            filtered.forEach(r => {
+                let cleanDate = r.date ? r.date.split('T')[0] : '';
+                let tr = document.createElement('tr');
+                let detailsText = `${r.details || ''} ${r.water ? '(Billo: ' + r.water + ')' : ''}`;
+
+                tr.innerHTML = `
+                    <td><strong>${cleanDate}</strong></td>
+                    <td><span style="background:#f0f0f0; padding:2px 5px; border-radius:4px;">${r.drum || '-'}</span></td>
+                    <td><span style="background-color:#e8f5e9; padding:2px 6px; border-radius:4px; font-weight:500;">${r.leather || '-'}</span></td>
+                    <td>${detailsText}</td>
+                    <td class="no-pdf">
+                        <div class="action-cell">
+                            <button type="button" class="btn-row-edit" title="Edit entry"><i class="fa-solid fa-pen"></i></button>
+                            <button type="button" class="btn-row-delete" title="Delete entry"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    </td>
+                `;
+
+                // Edit/Delete handlers inside Report Table
+                tr.querySelector('.btn-row-edit').onclick = () => { openDrumWindow(r.drum); populateForm(r); };
+                tr.querySelector('.btn-row-delete').onclick = () => { if(confirm("Kya aap delete karna chahte hain?")) deleteFromSheet(r.id); };
+
+                tbody.appendChild(tr);
             });
 
-            let daysText = daysLimit === "all" ? "Kul Arsay" : `${daysLimit} Dinon`;
-            resultBox.innerHTML = `Is Party ne <u>${daysText}</u> mein <strong>${count} Drums</strong> use kiye hain.`;
+            document.getElementById('partyPdfBtn').style.display = "flex";
+            reportSection.style.display = "block";
         }
 
         function updateMainButtons() {
             const list = ['Drum 1 M', 'Drum 2 M', 'Drum 3 M', 'Drum 4 L', 'Drum 5 L', 'Drum 6 Outside'];
             list.forEach(d => {
                 let btn = document.getElementById(`btn-${d}`);
-                if(btn) {
-                    btn.classList.remove('has-load');
-                }
+                if(btn) btn.classList.remove('has-load');
             });
 
             sheetRecords.forEach(r => {
                 let btn = document.getElementById(`btn-${r.drum}`);
-                if(btn) {
-                    btn.classList.add('has-load');
-                }
+                if(btn) btn.classList.add('has-load');
             });
         }
 
@@ -409,10 +447,11 @@
                 return;
             }
 
+            filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
+
             filtered.forEach(r => {
                 let cleanDate = r.date ? r.date.split('T')[0] : '';
                 let tr = document.createElement('tr');
-                
                 let detailsText = `${r.details || ''} ${r.water ? '(Billo: ' + r.water + ')' : ''}`;
 
                 tr.innerHTML = `
@@ -428,19 +467,8 @@
                     </td>
                 `;
 
-                // Edit function trigger
-                tr.querySelector('.btn-row-edit').onclick = (e) => {
-                    e.stopPropagation();
-                    populateForm(r);
-                };
-
-                // Delete function trigger
-                tr.querySelector('.btn-row-delete').onclick = (e) => {
-                    e.stopPropagation();
-                    if(confirm("Kya aap waqai yeh record delete karna chahte hain?")) {
-                        deleteFromSheet(r.id);
-                    }
-                };
+                tr.querySelector('.btn-row-edit').onclick = () => populateForm(r);
+                tr.querySelector('.btn-row-delete').onclick = () => { if(confirm("Kya aap delete karna chahte hain?")) deleteFromSheet(r.id); };
 
                 tbody.appendChild(tr);
             });
@@ -480,7 +508,7 @@
         function showMainScreen() {
             document.getElementById('screen-entry').classList.remove('active');
             document.getElementById('screen-main').classList.add('active');
-            calculatePartyReport();
+            generatePartyLiveReport();
         }
 
         async function saveToSheet(e) {
@@ -500,88 +528,59 @@
             };
 
             showPopup("Google Sheet me save ho raha hai...");
-
             try {
-                await fetch(SCRIPT_URL, {
-                    method: "POST",
-                    mode: "no-cors",
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                
+                await fetch(SCRIPT_URL, { method: "POST", mode: "no-cors", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
                 showPopup("Data successfully Saved!");
-                setTimeout(() => {
-                    loadSheetData();
-                    showMainScreen();
-                }, 1200);
-            } catch(err) {
-                showPopup("Net slow hai, dobara save dabayein.");
-            }
+                setTimeout(() => { loadSheetData(); showMainScreen(); }, 1200);
+            } catch(err) { showPopup("Net slow hai, dobara save dabayein."); }
         }
 
         async function deleteFromSheet(id) {
             showPopup("Record delete ho raha hai...");
             try {
-                await fetch(SCRIPT_URL, {
-                    method: "POST",
-                    mode: "no-cors",
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: "delete", id: id })
-                });
+                await fetch(SCRIPT_URL, { method: "POST", mode: "no-cors", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: "delete", id: id }) });
                 showPopup("Record successfully Deleted!");
                 setTimeout(() => { loadSheetData(); }, 1200);
-            } catch(err) {
-                showPopup("Error! Dobara koshish karein.");
-            }
+            } catch(err) { showPopup("Error! Dobara koshish karein."); }
         }
 
-        // Live PDF History Generation Feature
-        function downloadPDFHistory() {
-            showPopup("PDF generate ho rahi hai...");
+        // 2. DOWNLOAD PARTY SPECIFIC REPORT PDF
+        function downloadPartyPDF() {
+            showPopup("Party PDF ban rahi hai...");
+            const btn = document.getElementById('partyPdfBtn');
+            const noPdf = document.querySelectorAll('#partyReportTable .no-pdf');
             
-            // Temporary hide elements we don't want in PDF
-            const pdfBtn = document.getElementById('pdfBtn');
-            const noPdfElements = document.querySelectorAll('.no-pdf');
+            btn.style.display = 'none';
+            noPdf.forEach(el => el.style.display = 'none');
+
+            const element = document.getElementById('partyPdfArea');
+            html2pdf().set({ margin: 10, filename: `Party_Report.pdf`, html2canvas: { scale: 2 }, jsPDF: { format: 'a4' } }).from(element).save().then(() => {
+                btn.style.display = 'flex';
+                noPdf.forEach(el => el.style.display = '');
+                showPopup("Party PDF Downloaded!");
+            });
+        }
+
+        // 3. DOWNLOAD DRUM SPECIFIC HISTORY PDF
+        function downloadDrumPDF() {
+            showPopup("Drum PDF ban rahi hai...");
+            const btn = document.getElementById('drumPdfBtn');
+            const noPdf = document.querySelectorAll('#historyTable .no-pdf');
             
-            pdfBtn.style.display = 'none';
-            noPdfElements.forEach(el => el.style.display = 'none');
+            btn.style.display = 'none';
+            noPdf.forEach(el => el.style.display = 'none');
 
-            const element = document.getElementById('pdfArea');
-            const opt = {
-                margin:       10,
-                filename:     `${selectedDrum}_History.pdf`,
-                image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2 },
-                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            };
-
-            html2pdf().set(opt).from(element).save().then(() => {
-                // Restore hidden elements after processing
-                pdfBtn.style.style = '';
-                pdfBtn.style.background = '#0288d1';
-                pdfBtn.style.color = 'white';
-                pdfBtn.style.width = '100%';
-                pdfBtn.style.padding = '12px';
-                pdfBtn.style.borderRadius = '8px';
-                pdfBtn.style.marginBottom = '15px';
-                pdfBtn.style.fontSize = '1rem';
-                pdfBtn.style.fontWeight = 'bold';
-                pdfBtn.style.cursor = 'pointer';
-                pdfBtn.style.display = 'flex';
-                
-                noPdfElements.forEach(el => el.style.display = '');
-                showPopup("PDF Download ho gayi hai!");
-            }).catch(err => {
-                pdfBtn.style.display = 'flex';
-                noPdfElements.forEach(el => el.style.display = '');
-                showPopup("PDF banne mein masla aya.");
+            const element = document.getElementById('drumPdfArea');
+            html2pdf().set({ margin: 10, filename: `${selectedDrum}_History.pdf`, html2canvas: { scale: 2 }, jsPDF: { format: 'a4' } }).from(element).save().then(() => {
+                btn.style.display = 'flex';
+                noPdf.forEach(el => el.style.display = '');
+                showPopup("Drum PDF Downloaded!");
             });
         }
 
         function showPopup(text) {
             let t = document.getElementById("toast");
-            t.innerText = text;
-            t.classList.add("show");
+            t.innerText = text; t.classList.add("show");
             setTimeout(() => { t.classList.remove("show"); }, 3000);
         }
 
