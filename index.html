@@ -5,49 +5,48 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tannery App</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
-        body { font-family: sans-serif; padding: 10px; background: #fdfdfd; }
+        body { font-family: sans-serif; padding: 15px; background: #fdfdfd; }
         .screen { display: none; } .active { display: block; }
-        .drum-btn { width: 100%; padding: 20px; margin-bottom: 10px; background: #4caf50; color: white; border: none; border-radius: 8px; font-weight: bold; }
-        input, textarea { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #ccc; box-sizing: border-box; }
+        .report-box { background: #dcedc8; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+        .drum-btn { width: 100%; padding: 20px; margin-bottom: 10px; border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; background: #4caf50; }
+        input, textarea { width: 100%; padding: 10px; margin: 5px 0; border: 1px solid #ccc; box-sizing: border-box; }
         table { width: 100%; border-collapse: collapse; margin-top: 10px; }
         th { background: #2e7d32; color: white; padding: 8px; }
         td { border: 1px solid #ddd; padding: 8px; text-align: center; }
-        .btn-edit { background: #ffca28; border: none; padding: 5px 8px; cursor: pointer; }
-        .btn-del { background: #e53935; color: white; border: none; padding: 5px 8px; cursor: pointer; }
+        .btn-del { background: #e53935; color: white; border: none; padding: 5px; cursor: pointer; }
     </style>
 </head>
 <body>
 
-    <!-- Main Screen -->
+    <!-- Screen 1: Dashboard -->
     <div id="main-screen" class="screen active">
-        <h3>Tannery Drums</h3>
-        <input type="text" id="reportSearch" placeholder="Party Drum Detail Report..." oninput="showReport()">
-        <div id="reportResult"></div>
+        <h3>TANNERY DRUMS</h3>
+        <div class="report-box">
+            <label>Party Drum Detail Report:</label>
+            <input type="text" id="reportSearch" placeholder="Party ka naam likhein..." oninput="showReport()">
+            <div id="reportResult"></div>
+        </div>
         <button class="drum-btn" onclick="openEntry('Drum 1 M')">Drum 1 M</button>
         <button class="drum-btn" onclick="openEntry('Drum 2 M')">Drum 2 M</button>
         <button class="drum-btn" onclick="openEntry('Drum 3 M')">Drum 3 M</button>
-        <button class="drum-btn" onclick="openEntry('Drum 4 L')">Drum 4 L (Large)</button>
-        <button class="drum-btn" onclick="openEntry('Drum 5 L')">Drum 5 L (Large)</button>
+        <button class="drum-btn" onclick="openEntry('Drum 4 L (Large)')">Drum 4 L (Large)</button>
+        <button class="drum-btn" onclick="openEntry('Drum 5 L (Large)')">Drum 5 L (Large)</button>
         <button class="drum-btn" style="background:#ff9800" onclick="openEntry('Drum 6 Outside')">Drum 6 Outside</button>
     </div>
 
-    <!-- Entry Screen -->
+    <!-- Screen 2: Data Entry -->
     <div id="entry-screen" class="screen">
         <h3 id="drum-title"></h3>
-        <label>Party name:</label> <input type="text" id="party">
-        <label>Leather Type:</label> <input type="text" id="leather">
-        <label>Billo Pani (Water Amount):</label> <input type="text" id="water">
-        <label>Extra Chemical Details:</label> <textarea id="details" rows="2"></textarea>
-        <label>Date:</label> <input type="date" id="date">
-        <button onclick="saveData()" style="width:100%; padding:12px; background:#2e7d32; color:white; border:none;">Save Karein</button>
+        <input type="text" id="party" placeholder="Party Name">
+        <input type="text" id="leather" placeholder="Leather Type">
+        <input type="text" id="water" placeholder="Billo Pani (Amount)">
+        <textarea id="details" placeholder="Chemicals Detail"></textarea>
+        <input type="date" id="date">
+        <button onclick="saveData()" style="width:100%; padding:12px; background:#2e7d32; color:white;">Save Karein</button>
         <button onclick="goBack()" style="width:100%; padding:12px; margin-top:5px;">Wapas</button>
-        
-        <h3>Job History</h3>
-        <table>
-            <thead><tr><th>Date</th><th>Party</th><th>Leather</th><th>Details</th><th>Action</th></tr></thead>
-            <tbody id="data-body"></tbody>
-        </table>
+        <table id="histTable"><thead><tr><th>Date</th><th>Party</th><th>Action</th></tr></thead><tbody id="data-body"></tbody></table>
     </div>
 
     <script>
@@ -57,25 +56,19 @@
         function openEntry(name) {
             currentDrum = name;
             document.getElementById('drum-title').innerText = name;
-            document.getElementById('date').valueAsDate = new Date(); // Auto Date
+            document.getElementById('date').valueAsDate = new Date();
             document.getElementById('main-screen').classList.remove('active');
             document.getElementById('entry-screen').classList.add('active');
             renderTable();
         }
 
-        function goBack() {
-            document.getElementById('main-screen').classList.add('active');
-            document.getElementById('entry-screen').classList.remove('active');
+        function goBack() { 
+            document.getElementById('main-screen').classList.add('active'); 
+            document.getElementById('entry-screen').classList.remove('active'); 
         }
 
         function saveData() {
-            data.push({ id: Date.now(), drum: currentDrum, date: document.getElementById('date').value, party: document.getElementById('party').value, leather: document.getElementById('leather').value, water: document.getElementById('water').value, details: document.getElementById('details').value });
-            localStorage.setItem('tanneryData', JSON.stringify(data));
-            renderTable();
-        }
-
-        function deleteItem(id) {
-            data = data.filter(x => x.id !== id);
+            data.push({ id: Date.now(), drum: currentDrum, date: document.getElementById('date').value, party: document.getElementById('party').value });
             localStorage.setItem('tanneryData', JSON.stringify(data));
             renderTable();
         }
@@ -84,15 +77,26 @@
             let body = document.getElementById('data-body');
             body.innerHTML = "";
             data.filter(x => x.drum === currentDrum).forEach(x => {
-                body.innerHTML += `<tr><td>${x.date}</td><td>${x.party}</td><td>${x.leather}</td><td>${x.details}</td>
-                <td><button class="btn-edit"><i class="fa fa-pen"></i></button> <button class="btn-del" onclick="deleteItem(${x.id})"><i class="fa fa-trash"></i></button></td></tr>`;
+                body.innerHTML += `<tr><td>${x.date}</td><td>${x.party}</td><td><button class="btn-del" onclick="deleteItem(${x.id})">Del</button></td></tr>`;
             });
         }
+
+        function deleteItem(id) { data = data.filter(x => x.id !== id); localStorage.setItem('tanneryData', JSON.stringify(data)); renderTable(); }
 
         function showReport() {
             let val = document.getElementById('reportSearch').value.toLowerCase();
             let res = data.filter(x => x.party.toLowerCase().includes(val));
-            document.getElementById('reportResult').innerHTML = val ? res.map(x => `<p>${x.date} - ${x.drum} - ${x.party}</p>`).join('') : "";
+            let html = `<table id="repTable"><thead><tr><th>Date</th><th>Drum</th><th>Party</th></tr></thead><tbody>`;
+            res.forEach(x => html += `<tr><td>${x.date}</td><td>${x.drum}</td><td>${x.party}</td></tr>`);
+            html += `</tbody></table><button onclick="downloadPDF()" style="width:100%; margin-top:5px; background:#d32f2f; color:white;">Download PDF</button>`;
+            document.getElementById('reportResult').innerHTML = val ? html : "";
+        }
+
+        function downloadPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            doc.text("Party Report", 10, 10);
+            doc.html(document.getElementById('repTable'), { callback: function (doc) { doc.save('Report.pdf'); }, x: 10, y: 20 });
         }
     </script>
 </body>
