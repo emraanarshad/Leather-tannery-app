@@ -3,22 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tannery App</title>
+    <title>Tannery App Offline</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-database-compat.js"></script>
     <style>
         body { font-family: sans-serif; padding: 10px; }
         .screen { display: none; } .active { display: block; }
         .report-box { background: #e8f5e9; padding: 10px; border-radius: 8px; margin-bottom: 10px; }
-        .btn { width: 100%; padding: 12px; margin: 5px 0; border: none; border-radius: 5px; color: white; font-weight: bold; }
-        input { width: 100%; padding: 10px; margin: 5px 0; border: 1px solid #ccc; box-sizing: border-box; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; }
-        th, td { border: 1px solid #999; padding: 5px; text-align: center; }
+        .drum-btn { width: 100%; padding: 15px; margin: 5px 0; border: none; border-radius: 5px; color: white; font-weight: bold; background: #2e7d32; }
+        input, textarea { width: 100%; padding: 8px; margin: 3px 0; border: 1px solid #ccc; box-sizing: border-box; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 10px; }
+        th, td { border: 1px solid #999; padding: 4px; text-align: center; }
+        .btn-edit { background: #ffca28; border: none; padding: 3px; margin-right: 3px; }
+        .btn-del { background: #e53935; color: white; border: none; padding: 3px; }
     </style>
 </head>
 <body>
 
-    <!-- Window 1: Home -->
     <div id="main-screen" class="screen active">
         <h3>TANNERY DRUMS</h3>
         <div class="report-box">
@@ -27,38 +29,88 @@
             <input type="date" id="endDate" onchange="renderReport()">
             <div id="reportResult"></div>
         </div>
-        <button class="btn" style="background:#2e7d32;" onclick="openEntry('Drum 1')">Drum 1</button>
-        <button class="btn" style="background:#2e7d32;" onclick="openEntry('Drum 2')">Drum 2</button>
-        <button class="btn" style="background:#2e7d32;" onclick="openEntry('Drum 3')">Drum 3</button>
+        <button class="drum-btn" onclick="openEntry('Drum 1 M')">Drum 1 M</button>
+        <button class="drum-btn" onclick="openEntry('Drum 2 M')">Drum 2 M</button>
+        <button class="drum-btn" onclick="openEntry('Drum 3 M')">Drum 3 M</button>
     </div>
 
-    <!-- Window 2: Entry -->
     <div id="entry-screen" class="screen">
         <h3 id="drum-title"></h3>
-        <input type="date" id="date">
         <input type="text" id="party" placeholder="Party Name">
         <input type="text" id="leather" placeholder="Leather Type">
-        <button class="btn" style="background:#4caf50;" onclick="saveData()">Save Entry</button>
-        <button class="btn" style="background:#777;" onclick="goBack()">Back to Home</button>
-        <table id="histTable"><thead><tr><th>Date</th><th>Party</th><th>Leather</th><th>Action</th></tr></thead><tbody id="data-body"></tbody></table>
+        <input type="text" id="water" placeholder="Billo Pani">
+        <textarea id="details" placeholder="Details"></textarea>
+        <input type="date" id="date">
+        <button onclick="saveData()" style="width:100%; padding:10px; background:#2e7d32; color:white; border:none;">Save Entry</button>
+        <button onclick="goBack()" style="width:100%; padding:10px; margin-top:5px;">Wapas</button>
+        <table id="histTable"><thead><tr><th>Date</th><th>Party</th><th>Leather</th><th>Pani</th><th>Details</th><th>Act</th></tr></thead><tbody id="data-body"></tbody></table>
+    </div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tannery App Offline</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-database-compat.js"></script>
+    <style>
+        body { font-family: sans-serif; padding: 10px; }
+        .screen { display: none; } .active { display: block; }
+        .report-box { background: #e8f5e9; padding: 10px; border-radius: 8px; margin-bottom: 10px; }
+        .drum-btn { width: 100%; padding: 15px; margin: 5px 0; border: none; border-radius: 5px; color: white; font-weight: bold; background: #2e7d32; }
+        input, textarea { width: 100%; padding: 8px; margin: 3px 0; border: 1px solid #ccc; box-sizing: border-box; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 10px; }
+        th, td { border: 1px solid #999; padding: 4px; text-align: center; }
+        .btn-edit { background: #ffca28; border: none; padding: 3px; margin-right: 3px; }
+        .btn-del { background: #e53935; color: white; border: none; padding: 3px; }
+    </style>
+</head>
+<body>
+
+    <div id="main-screen" class="screen active">
+        <h3>TANNERY DRUMS</h3>
+        <div class="report-box">
+            <input type="text" id="reportSearch" placeholder="Search Party..." oninput="renderReport()">
+            <input type="date" id="startDate" onchange="renderReport()">
+            <input type="date" id="endDate" onchange="renderReport()">
+            <div id="reportResult"></div>
+        </div>
+        <button class="drum-btn" onclick="openEntry('Drum 1 M')">Drum 1 M</button>
+        <button class="drum-btn" onclick="openEntry('Drum 2 M')">Drum 2 M</button>
+        <button class="drum-btn" onclick="openEntry('Drum 3 M')">Drum 3 M</button>
+    </div>
+
+    <div id="entry-screen" class="screen">
+        <h3 id="drum-title"></h3>
+        <input type="text" id="party" placeholder="Party Name">
+        <input type="text" id="leather" placeholder="Leather Type">
+        <input type="text" id="water" placeholder="Billo Pani">
+        <textarea id="details" placeholder="Details"></textarea>
+        <input type="date" id="date">
+        <button onclick="saveData()" style="width:100%; padding:10px; background:#2e7d32; color:white; border:none;">Save Entry</button>
+        <button onclick="goBack()" style="width:100%; padding:10px; margin-top:5px;">Wapas</button>
+        <table id="histTable"><thead><tr><th>Date</th><th>Party</th><th>Leather</th><th>Pani</th><th>Details</th><th>Act</th></tr></thead><tbody id="data-body"></tbody></table>
     </div>
 
     <script>
-        const DB_KEY = 'tannery_all_data';
+        const DB_KEY = 'tannery_local_store';
         const firebaseConfig = { databaseURL: "https://mizan-khata-default-rtdb.firebaseio.com/" };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
         
-        let allData = JSON.parse(localStorage.getItem(DB_KEY)) || {};
+        // 1. Data load from LocalStorage (Offline support)
+        let allData = JSON.parse(localStorage.getItem(DB_KEY)) || [];
         let currentDrum = "";
 
-        // Sync with Firebase
+        // 2. Firebase Sync
         db.ref('tanneryData').on('value', (snapshot) => {
             if (snapshot.exists()) {
-                allData = snapshot.val();
-                localStorage.setItem(DB_KEY, JSON.stringify(allData));
-                renderTable();
+                allData = [];
+                snapshot.forEach((child) => { allData.push({ id: child.key, ...child.val() }); });
+                localStorage.setItem(DB_KEY, JSON.stringify(allData)); // Save to phone memory
                 renderReport();
+                renderTable();
             }
         });
 
@@ -71,46 +123,101 @@
             renderTable();
         }
 
-        function goBack() { 
-            document.getElementById('main-screen').classList.add('active'); 
-            document.getElementById('entry-screen').classList.remove('active'); 
-        }
+        function goBack() { document.getElementById('main-screen').classList.add('active'); document.getElementById('entry-screen').classList.remove('active'); }
 
         function saveData() {
-            let id = Date.now().toString();
-            let entry = { drum: currentDrum, date: document.getElementById('date').value, party: document.getElementById('party').value, leather: document.getElementById('leather').value };
-            allData[id] = entry;
-            db.ref('tanneryData').set(allData);
+            let entry = { drum: currentDrum, date: document.getElementById('date').value, party: document.getElementById('party').value, leather: document.getElementById('leather').value, water: document.getElementById('water').value, details: document.getElementById('details').value };
+            // Firebase update
+            db.ref('tanneryData').push(entry);
+            // Local update
+            allData.push(entry);
             localStorage.setItem(DB_KEY, JSON.stringify(allData));
-            renderTable();
             alert("Entry Saved!");
-        }
-
-        function deleteEntry(id) {
-            delete allData[id];
-            db.ref('tanneryData').set(allData);
-            localStorage.setItem(DB_KEY, JSON.stringify(allData));
             renderTable();
         }
 
         function renderTable() {
             let body = document.getElementById('data-body');
+            if(!body) return;
             body.innerHTML = "";
-            for (let id in allData) {
-                if (allData[id].drum === currentDrum) {
-                    body.innerHTML += `<tr><td>${allData[id].date}</td><td>${allData[id].party}</td><td>${allData[id].leather}</td><td><button onclick="deleteEntry('${id}')">X</button></td></tr>`;
-                }
-            }
+            allData.filter(x => x.drum === currentDrum).forEach(x => {
+                body.innerHTML += `<tr><td>${x.date}</td><td>${x.party}</td><td>${x.leather}</td><td>${x.water}</td><td>${x.details}</td><td><button class="btn-del" onclick="alert('Internet zaroori hai delete ke liye')">X</button></td></tr>`;
+            });
         }
 
         function renderReport() {
             let p = document.getElementById('reportSearch').value.toLowerCase();
             let start = document.getElementById('startDate').value;
             let end = document.getElementById('endDate').value;
-            let res = Object.values(allData).filter(x => (x.party || "").toLowerCase().includes(p) && (!start || x.date >= start) && (!end || x.date <= end));
+            let res = allData.filter(x => (x.party || "").toLowerCase().includes(p) && (!start || x.date >= start) && (!end || x.date <= end));
             let html = `<table><thead><tr><th>Date</th><th>Party</th></tr></thead><tbody>`;
             res.forEach(x => html += `<tr><td>${x.date}</td><td>${x.party}</td></tr>`);
-            document.getElementById('reportResult').innerHTML = html + `</tbody></table>`;
+            document.getElementById('reportResult').innerHTML = (p || start || end) ? html + `</tbody></table>` : "";
+        }
+    </script>
+</body>
+</html>
+
+    <script>
+        const DB_KEY = 'tannery_local_store';
+        const firebaseConfig = { databaseURL: "https://mizan-khata-default-rtdb.firebaseio.com/" };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        
+        // 1. Data load from LocalStorage (Offline support)
+        let allData = JSON.parse(localStorage.getItem(DB_KEY)) || [];
+        let currentDrum = "";
+
+        // 2. Firebase Sync
+        db.ref('tanneryData').on('value', (snapshot) => {
+            if (snapshot.exists()) {
+                allData = [];
+                snapshot.forEach((child) => { allData.push({ id: child.key, ...child.val() }); });
+                localStorage.setItem(DB_KEY, JSON.stringify(allData)); // Save to phone memory
+                renderReport();
+                renderTable();
+            }
+        });
+
+        function openEntry(name) {
+            currentDrum = name;
+            document.getElementById('drum-title').innerText = name;
+            document.getElementById('date').valueAsDate = new Date();
+            document.getElementById('main-screen').classList.remove('active');
+            document.getElementById('entry-screen').classList.add('active');
+            renderTable();
+        }
+
+        function goBack() { document.getElementById('main-screen').classList.add('active'); document.getElementById('entry-screen').classList.remove('active'); }
+
+        function saveData() {
+            let entry = { drum: currentDrum, date: document.getElementById('date').value, party: document.getElementById('party').value, leather: document.getElementById('leather').value, water: document.getElementById('water').value, details: document.getElementById('details').value };
+            // Firebase update
+            db.ref('tanneryData').push(entry);
+            // Local update
+            allData.push(entry);
+            localStorage.setItem(DB_KEY, JSON.stringify(allData));
+            alert("Entry Saved!");
+            renderTable();
+        }
+
+        function renderTable() {
+            let body = document.getElementById('data-body');
+            if(!body) return;
+            body.innerHTML = "";
+            allData.filter(x => x.drum === currentDrum).forEach(x => {
+                body.innerHTML += `<tr><td>${x.date}</td><td>${x.party}</td><td>${x.leather}</td><td>${x.water}</td><td>${x.details}</td><td><button class="btn-del" onclick="alert('Internet zaroori hai delete ke liye')">X</button></td></tr>`;
+            });
+        }
+
+        function renderReport() {
+            let p = document.getElementById('reportSearch').value.toLowerCase();
+            let start = document.getElementById('startDate').value;
+            let end = document.getElementById('endDate').value;
+            let res = allData.filter(x => (x.party || "").toLowerCase().includes(p) && (!start || x.date >= start) && (!end || x.date <= end));
+            let html = `<table><thead><tr><th>Date</th><th>Party</th></tr></thead><tbody>`;
+            res.forEach(x => html += `<tr><td>${x.date}</td><td>${x.party}</td></tr>`);
+            document.getElementById('reportResult').innerHTML = (p || start || end) ? html + `</tbody></table>` : "";
         }
     </script>
 </body>
