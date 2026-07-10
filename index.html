@@ -16,6 +16,7 @@
         table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 10px; }
         th { background: #2e7d32; color: white; padding: 5px; }
         td { border: 1px solid #ddd; padding: 5px; text-align: center; }
+        .btn-edit { background: #ffca28; border: none; padding: 5px; cursor: pointer; margin-right: 5px; }
         .btn-del { background: #e53935; color: white; border: none; padding: 5px; cursor: pointer; }
         @media print { #main-screen > *:not(.report-box) { display: none !important; } .drum-btn, button { display: none !important; } }
     </style>
@@ -25,14 +26,11 @@
     <div id="main-screen" class="screen active">
         <h3>TANNERY DRUMS</h3>
         <div class="report-box">
-            <label>Party Name:</label>
-            <input type="text" id="reportSearch" placeholder="Search..." oninput="renderReport()">
-            <label>Start Date:</label>
+            <input type="text" id="reportSearch" placeholder="Search Party..." oninput="renderReport()">
             <input type="date" id="startDate" onchange="renderReport()">
-            <label>End Date:</label>
             <input type="date" id="endDate" onchange="renderReport()">
             <div id="reportResult"></div>
-            <button onclick="window.print()" style="margin-top:10px; padding:10px; width:100%; background:#007bff; color:white; border:none;">Print / Save as PDF</button>
+            <button onclick="window.print()" style="margin-top:10px; padding:10px; width:100%; background:#007bff; color:white; border:none;">Print / Save PDF</button>
         </div>
         <button class="drum-btn" onclick="openEntry('Drum 1 M')">Drum 1 M</button>
         <button class="drum-btn" onclick="openEntry('Drum 2 M')">Drum 2 M</button>
@@ -59,6 +57,9 @@
         const firebaseConfig = { databaseURL: "https://mizan-khata-default-rtdb.firebaseio.com/" };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
+        // Offline Persistence Enabled
+        try { firebase.database().enablePersistence(); } catch (e) {}
+
         let currentDrum = "";
         let allData = [];
 
@@ -86,12 +87,20 @@
             document.getElementById('party').value = ""; document.getElementById('leather').value = ""; document.getElementById('water').value = ""; document.getElementById('details').value = "";
         }
 
+        function editItem(id) {
+            let item = allData.find(x => x.id === id);
+            document.getElementById('party').value = item.party; document.getElementById('leather').value = item.leather;
+            document.getElementById('water').value = item.water; document.getElementById('details').value = item.details;
+            document.getElementById('date').value = item.date;
+            db.ref('tanneryData/' + id).remove();
+        }
+
         function renderTable() {
             let body = document.getElementById('data-body');
             if(!body) return;
             body.innerHTML = "";
             allData.filter(x => x.drum === currentDrum).forEach(x => {
-                body.innerHTML += `<tr><td>${x.date}</td><td>${x.party}</td><td>${x.leather}</td><td>${x.water}</td><td>${x.details}</td><td><button class="btn-del" onclick="db.ref('tanneryData/${x.id}').remove()"><i class="fa fa-trash"></i></button></td></tr>`;
+                body.innerHTML += `<tr><td>${x.date}</td><td>${x.party}</td><td>${x.leather}</td><td>${x.water}</td><td>${x.details}</td><td><button class="btn-edit" onclick="editItem('${x.id}')"><i class="fa fa-pen"></i></button><button class="btn-del" onclick="db.ref('tanneryData/${x.id}').remove()"><i class="fa fa-trash"></i></button></td></tr>`;
             });
         }
 
