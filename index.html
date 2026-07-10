@@ -61,6 +61,15 @@
 
         window.onload = () => { renderReport(); renderTable(); };
 
+        // Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                .then(() => console.log('Service Worker Registered'))
+                .catch(err => console.log('Registration failed:', err));
+            });
+        }
+
         db.ref('tanneryData').on('value', (snapshot) => {
             if (snapshot.exists()) {
                 allData = [];
@@ -84,18 +93,10 @@
 
         function saveData() {
             let entry = { id: Date.now().toString(), drum: currentDrum, date: document.getElementById('date').value, party: document.getElementById('party').value, leather: document.getElementById('leather').value, water: document.getElementById('water').value, details: document.getElementById('details').value };
-            
             allData.push(entry);
             localStorage.setItem(DB_KEY, JSON.stringify(allData));
             db.ref('tanneryData/' + entry.id).set(entry);
-            
-            // Fields khali karne ke liye:
-            document.getElementById('party').value = "";
-            document.getElementById('leather').value = "";
-            document.getElementById('water').value = "";
-            document.getElementById('details').value = "";
-            document.getElementById('date').valueAsDate = new Date();
-            
+            document.getElementById('party').value = ""; document.getElementById('leather').value = ""; document.getElementById('water').value = ""; document.getElementById('details').value = ""; document.getElementById('date').valueAsDate = new Date();
             renderTable();
         }
 
