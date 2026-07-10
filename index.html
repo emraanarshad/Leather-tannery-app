@@ -18,6 +18,12 @@
         td { border: 1px solid #ddd; padding: 5px; text-align: center; }
         .btn-edit { background: #ffca28; border: none; padding: 5px; cursor: pointer; }
         .btn-del { background: #e53935; color: white; border: none; padding: 5px; cursor: pointer; }
+        
+        @media print {
+            #main-screen > *:not(.report-box) { display: none !important; }
+            #main-screen, .report-box { display: block !important; }
+            .drum-btn, button { display: none !important; }
+        }
     </style>
 </head>
 <body>
@@ -30,6 +36,7 @@
             <label>Start Date:</label> <input type="date" id="startDate" onchange="renderReport()">
             <label>End Date:</label> <input type="date" id="endDate" onchange="renderReport()">
             <div id="reportResult"></div>
+            <button onclick="window.print()" style="margin-top:10px; padding:10px; width:100%; background:#007bff; color:white; border:none;">Print / Save as PDF</button>
         </div>
         <button class="drum-btn" onclick="openEntry('Drum 1 M')">Drum 1 M</button>
         <button class="drum-btn" onclick="openEntry('Drum 2 M')">Drum 2 M</button>
@@ -52,13 +59,19 @@
     </div>
 
     <script>
+        // Service Worker Register
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js')
+            .then(() => console.log("Service Worker Registered!"))
+            .catch((err) => console.log("Service Worker Failed", err));
+        }
+
         const firebaseConfig = { databaseURL: "https://mizan-khata-default-rtdb.firebaseio.com/" };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
         let currentDrum = "";
         let allData = [];
 
-        // Data fetch logic
         window.onload = () => {
             db.ref('tanneryData').on('value', (snapshot) => {
                 allData = [];
