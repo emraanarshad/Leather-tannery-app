@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tannery App</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-database-compat.js"></script>
     <style>
@@ -59,24 +58,25 @@
         let currentDrum = "";
         let allData = [];
 
+        // Application start hote hi data load karega
+        window.onload = () => {
+            db.ref('tanneryData').on('value', (snapshot) => {
+                allData = [];
+                snapshot.forEach((child) => { allData.push({ id: child.key, ...child.val() }); });
+                renderReport();
+            });
+        };
+
         function openEntry(name) {
             currentDrum = name;
             document.getElementById('drum-title').innerText = name;
             document.getElementById('date').valueAsDate = new Date();
             document.getElementById('main-screen').classList.remove('active');
             document.getElementById('entry-screen').classList.add('active');
-            fetchOnlineData();
+            renderTable();
         }
 
         function goBack() { document.getElementById('main-screen').classList.add('active'); document.getElementById('entry-screen').classList.remove('active'); }
-
-        function fetchOnlineData() {
-            db.ref('tanneryData').on('value', (snapshot) => {
-                allData = [];
-                snapshot.forEach((child) => { allData.push({ id: child.key, ...child.val() }); });
-                renderTable(); renderReport();
-            });
-        }
 
         function saveData() {
             let entry = { drum: currentDrum, date: document.getElementById('date').value, party: document.getElementById('party').value, leather: document.getElementById('leather').value, water: document.getElementById('water').value, details: document.getElementById('details').value };
@@ -105,12 +105,9 @@
             let p = document.getElementById('reportSearch').value.toLowerCase();
             let start = document.getElementById('startDate').value;
             let end = document.getElementById('endDate').value;
-            let res = allData.filter(x => x.party && x.party.toLowerCase().includes(p) && (!start || x.date >= start) && (!end || x.date <= end));
-            
-            // Yahan naye columns add kar diye hain
+            let res = allData.filter(x => (x.party || "").toLowerCase().includes(p) && (!start || x.date >= start) && (!end || x.date <= end));
             let html = `<table id="repTable"><thead><tr><th>Date</th><th>Party</th><th>Drum</th><th>Leather</th><th>Pani</th><th>Details</th></tr></thead><tbody>`;
-            res.forEach(x => html += `<tr><td>${x.date}</td><td>${x.party}</td><td>${x.drum}</td><td>${x.leather}</td><td>${x.water}</td><td>${x.details}</td></tr>`);
-            
+            res.forEach(x => html += `<tr><td>${x.date}</td><td>${x.party || ""}</td><td>${x.drum || ""}</td><td>${x.leather || ""}</td><td>${x.water || ""}</td><td>${x.details || ""}</td></tr>`);
             document.getElementById('reportResult').innerHTML = (p || start || end) ? html + `</tbody></table>` : "";
         }
     </script>
