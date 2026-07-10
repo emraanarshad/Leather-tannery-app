@@ -27,11 +27,20 @@
 <body>
 
     <div id="main-screen" class="screen active">
-        <h3>TANNERY DRUMS (ONLINE)</h3>
-        <!-- Report section remains same -->
-        <div class="report-box">...</div> 
+        <h3>TANNERY DRUMS</h3>
+        <div class="report-box">
+            <label>Party Drum Detail Report:</label>
+            <input type="text" id="reportSearch" placeholder="Party name..." oninput="renderReport()">
+            <label>Start Date:</label> <input type="date" id="startDate" onchange="renderReport()">
+            <label>End Date:</label> <input type="date" id="endDate" onchange="renderReport()">
+            <div id="reportResult"></div>
+        </div>
         <button class="drum-btn" onclick="openEntry('Drum 1 M')">Drum 1 M</button>
-        <!-- Add other drums here -->
+        <button class="drum-btn" onclick="openEntry('Drum 2 M')">Drum 2 M</button>
+        <button class="drum-btn" onclick="openEntry('Drum 3 M')">Drum 3 M</button>
+        <button class="drum-btn" onclick="openEntry('Drum 4 L (Large)')">Drum 4 L (Large)</button>
+        <button class="drum-btn" onclick="openEntry('Drum 5 L (Large)')">Drum 5 L (Large)</button>
+        <button class="drum-btn" style="background:#ff9800" onclick="openEntry('Drum 6 Outside')">Drum 6 Outside</button>
     </div>
 
     <div id="entry-screen" class="screen">
@@ -47,61 +56,56 @@
     </div>
 
     <script>
-        // Firebase Setup
         const firebaseConfig = { databaseURL: "https://mizan-khata-default-rtdb.firebaseio.com/" };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
         let currentDrum = "";
-        let data = []; // Local array for display
+        let allData = [];
 
         function openEntry(name) {
             currentDrum = name;
             document.getElementById('drum-title').innerText = name;
+            document.getElementById('date').valueAsDate = new Date();
             document.getElementById('main-screen').classList.remove('active');
             document.getElementById('entry-screen').classList.add('active');
-            fetchDataOnline(); 
+            fetchOnlineData();
         }
 
-        // Online Data Fetch
-        function fetchDataOnline() {
-            db.ref('tanneryData/' + currentDrum).on('value', (snapshot) => {
-                data = [];
-                snapshot.forEach((child) => {
-                    data.push({ id: child.key, ...child.val() });
-                });
-                renderTable();
+        function goBack() { document.getElementById('main-screen').classList.add('active'); document.getElementById('entry-screen').classList.remove('active'); }
+
+        function fetchOnlineData() {
+            db.ref('tanneryData').on('value', (snapshot) => {
+                allData = [];
+                snapshot.forEach((child) => { allData.push({ id: child.key, ...child.val() }); });
+                renderTable(); renderReport();
             });
         }
 
         function saveData() {
-            let entry = {
-                date: document.getElementById('date').value,
-                party: document.getElementById('party').value,
-                leather: document.getElementById('leather').value,
-                water: document.getElementById('water').value,
-                details: document.getElementById('details').value,
-                drum: currentDrum
-            };
-            db.ref('tanneryData/' + currentDrum).push(entry).then(() => {
-                alert("Data Online Save Ho Gaya!");
-                // Clear fields
-            });
-        }
-
-        function deleteItem(id) {
-            db.ref('tanneryData/' + currentDrum + '/' + id).remove();
+            let entry = { drum: currentDrum, date: document.getElementById('date').value, party: document.getElementById('party').value, leather: document.getElementById('leather').value, water: document.getElementById('water').value, details: document.getElementById('details').value };
+            db.ref('tanneryData').push(entry).then(() => { alert("Online Save Ho Gaya!"); });
+            document.getElementById('party').value = ""; document.getElementById('details').value = "";
         }
 
         function renderTable() {
-            let body = document.getElementById('data-body');
-            body.innerHTML = "";
-            data.forEach(x => {
+            let body = document.getElementById('data-body'); body.innerHTML = "";
+            allData.filter(x => x.drum === currentDrum).forEach(x => {
                 body.innerHTML += `<tr><td>${x.date}</td><td>${x.party}</td><td>${x.leather}</td><td>${x.water}</td><td>${x.details}</td><td><button class="btn-del" onclick="deleteItem('${x.id}')"><i class="fa fa-trash"></i></button></td></tr>`;
             });
         }
 
-        function goBack() { document.getElementById('main-screen').classList.add('active'); document.getElementById('entry-screen').classList.remove('active'); }
+        function deleteItem(id) { db.ref('tanneryData/' + id).remove(); }
+
+        function renderReport() {
+            let p = document.getElementById('reportSearch').value.toLowerCase();
+            let start = document.getElementById('startDate').value;
+            let end = document.getElementById('endDate').value;
+            let res = allData.filter(x => x.party && x.party.toLowerCase().includes(p) && (!start || x.date >= start) && (!end || x.date <= end));
+            let html = `<table id="repTable"><thead><tr><th>Date</th><th>Party</th><th>Drum</th></tr></thead><tbody>`;
+            res.forEach(x => html += `<tr><td>${x.date}</td><td>${x.party}</td><td>${x.drum}</td></tr>`);
+            document.getElementById('reportResult').innerHTML = (p || start || end) ? html + `</tbody></table>` : "";
+        }
     </script>
 </body>
 </html>
