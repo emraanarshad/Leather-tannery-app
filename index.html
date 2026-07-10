@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tannery App</title>
-    <!-- Font Awesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-database-compat.js"></script>
     <style>
@@ -24,7 +22,6 @@
 </head>
 <body>
 
-    <!-- Main Screen -->
     <div id="main-screen" class="screen active">
         <h3>TANNERY DRUMS (ONLINE)</h3>
         <div class="report-box">
@@ -42,7 +39,6 @@
         <button class="drum-btn" style="background:#ff9800" onclick="openEntry('Drum 6 Outside')">Drum 6 Outside</button>
     </div>
 
-    <!-- Entry Screen -->
     <div id="entry-screen" class="screen">
         <h3 id="drum-title"></h3>
         <input type="text" id="party" placeholder="Party Name">
@@ -52,10 +48,7 @@
         <input type="date" id="date">
         <button onclick="saveData()" style="width:100%; padding:12px; background:#2e7d32; color:white; border:none;">Save Online</button>
         <button onclick="goBack()" style="width:100%; padding:12px; margin-top:5px;">Wapas</button>
-        <table id="histTable">
-            <thead><tr><th>Date</th><th>Party</th><th>Leather</th><th>Pani</th><th>Details</th><th>Action</th></tr></thead>
-            <tbody id="data-body"></tbody>
-        </table>
+        <table id="histTable"><thead><tr><th>Date</th><th>Party</th><th>Leather</th><th>Pani</th><th>Details</th><th>Action</th></tr></thead><tbody id="data-body"></tbody></table>
     </div>
 
     <script>
@@ -65,7 +58,7 @@
         let currentDrum = "";
         let allData = [];
 
-        // App load hote hi data fetch karein
+        // Data fetch logic
         window.onload = () => {
             db.ref('tanneryData').on('value', (snapshot) => {
                 allData = [];
@@ -84,30 +77,17 @@
             renderTable();
         }
 
-        function goBack() { 
-            document.getElementById('main-screen').classList.add('active'); 
-            document.getElementById('entry-screen').classList.remove('active'); 
-        }
+        function goBack() { document.getElementById('main-screen').classList.add('active'); document.getElementById('entry-screen').classList.remove('active'); }
 
         function saveData() {
-            let entry = { 
-                drum: currentDrum, 
-                date: document.getElementById('date').value, 
-                party: document.getElementById('party').value, 
-                leather: document.getElementById('leather').value, 
-                water: document.getElementById('water').value, 
-                details: document.getElementById('details').value 
-            };
+            let entry = { drum: currentDrum, date: document.getElementById('date').value, party: document.getElementById('party').value, leather: document.getElementById('leather').value, water: document.getElementById('water').value, details: document.getElementById('details').value };
             db.ref('tanneryData').push(entry);
-            document.getElementById('party').value = ""; 
-            document.getElementById('leather').value = ""; 
-            document.getElementById('water').value = ""; 
-            document.getElementById('details').value = "";
+            document.getElementById('party').value = ""; document.getElementById('leather').value = ""; document.getElementById('water').value = ""; document.getElementById('details').value = "";
         }
 
         function renderTable() {
             let body = document.getElementById('data-body');
-            if (!body) return;
+            if(!body) return;
             body.innerHTML = "";
             allData.filter(x => x.drum === currentDrum).forEach(x => {
                 body.innerHTML += `<tr><td>${x.date}</td><td>${x.party}</td><td>${x.leather}</td><td>${x.water}</td><td>${x.details}</td><td><button class="btn-edit" onclick="editItem('${x.id}')"><i class="fa fa-pen"></i></button> <button class="btn-del" onclick="deleteItem('${x.id}')"><i class="fa fa-trash"></i></button></td></tr>`;
@@ -118,10 +98,8 @@
 
         function editItem(id) {
             let item = allData.find(x => x.id === id);
-            document.getElementById('party').value = item.party; 
-            document.getElementById('leather').value = item.leather;
-            document.getElementById('water').value = item.water; 
-            document.getElementById('details').value = item.details;
+            document.getElementById('party').value = item.party; document.getElementById('leather').value = item.leather;
+            document.getElementById('water').value = item.water; document.getElementById('details').value = item.details;
             document.getElementById('date').value = item.date;
             deleteItem(id);
         }
@@ -131,10 +109,8 @@
             let start = document.getElementById('startDate').value;
             let end = document.getElementById('endDate').value;
             let res = allData.filter(x => (x.party || "").toLowerCase().includes(p) && (!start || x.date >= start) && (!end || x.date <= end));
-            
             let html = `<table id="repTable"><thead><tr><th>Date</th><th>Party</th><th>Drum</th><th>Leather</th><th>Pani</th><th>Details</th></tr></thead><tbody>`;
             res.forEach(x => html += `<tr><td>${x.date}</td><td>${x.party || ""}</td><td>${x.drum || ""}</td><td>${x.leather || ""}</td><td>${x.water || ""}</td><td>${x.details || ""}</td></tr>`);
-            
             document.getElementById('reportResult').innerHTML = (p || start || end) ? html + `</tbody></table>` : "";
         }
     </script>
