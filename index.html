@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tannery App</title>
+    <title>Tannery App V3</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-database-compat.js"></script>
@@ -56,8 +56,7 @@
         const firebaseConfig = { databaseURL: "https://mizan-khata-default-rtdb.firebaseio.com/" };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
-        try { firebase.database().enablePersistence(); } catch (e) {}
-
+        
         let currentDrum = "";
         let allData = [];
 
@@ -110,6 +109,11 @@
             let html = `<table><thead><tr><th>Date</th><th>Party</th><th>Leather</th><th>Pani</th><th>Details</th></tr></thead><tbody>`;
             res.forEach(x => html += `<tr><td>${x.date}</td><td>${x.party}</td><td>${x.leather}</td><td>${x.water}</td><td>${x.details}</td></tr>`);
             document.getElementById('reportResult').innerHTML = (p || start || end) ? html + `</tbody></table>` : "";
+        }
+
+        // Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js');
         }
     </script>
 </body>
