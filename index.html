@@ -1,48 +1,50 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tannery Management</title>
+    <title>Tannery App</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-database-compat.js"></script>
     <style>
-        body { font-family: sans-serif; padding: 10px; margin: 0; background: #f4f4f4; }
-        .screen { display: none; background: white; padding: 15px; border-radius: 10px; min-height: 90vh; }
-        .active { display: block; }
-        .btn { width: 100%; padding: 12px; margin: 5px 0; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; }
-        input { width: 100%; padding: 10px; margin: 5px 0; border: 1px solid #ccc; box-sizing: border-box; border-radius: 4px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: center; font-size: 13px; }
-        th { background: #eee; }
-        .del-btn { background: #ff4d4d; color: white; border: none; padding: 5px; cursor: pointer; }
+        body { font-family: sans-serif; padding: 10px; }
+        .screen { display: none; } .active { display: block; }
+        .report-box { background: #e8f5e9; padding: 10px; border-radius: 8px; margin-bottom: 10px; }
+        .btn { width: 100%; padding: 12px; margin: 5px 0; border: none; border-radius: 5px; color: white; font-weight: bold; }
+        input { width: 100%; padding: 10px; margin: 5px 0; border: 1px solid #ccc; box-sizing: border-box; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; }
+        th, td { border: 1px solid #999; padding: 5px; text-align: center; }
     </style>
 </head>
 <body>
 
+    <!-- Window 1: Home -->
     <div id="main-screen" class="screen active">
-        <h3>Drum Selection</h3>
-        <button class="btn" style="background:#2e7d32; color:white;" onclick="openEntry('Drum 1')">Drum 1</button>
-        <button class="btn" style="background:#2e7d32; color:white;" onclick="openEntry('Drum 2')">Drum 2</button>
-        <button class="btn" style="background:#2e7d32; color:white;" onclick="openEntry('Drum 3')">Drum 3</button>
+        <h3>TANNERY DRUMS</h3>
+        <div class="report-box">
+            <input type="text" id="reportSearch" placeholder="Search Party..." oninput="renderReport()">
+            <input type="date" id="startDate" onchange="renderReport()">
+            <input type="date" id="endDate" onchange="renderReport()">
+            <div id="reportResult"></div>
+        </div>
+        <button class="btn" style="background:#2e7d32;" onclick="openEntry('Drum 1')">Drum 1</button>
+        <button class="btn" style="background:#2e7d32;" onclick="openEntry('Drum 2')">Drum 2</button>
+        <button class="btn" style="background:#2e7d32;" onclick="openEntry('Drum 3')">Drum 3</button>
     </div>
 
+    <!-- Window 2: Entry -->
     <div id="entry-screen" class="screen">
         <h3 id="drum-title"></h3>
+        <input type="date" id="date">
         <input type="text" id="party" placeholder="Party Name">
         <input type="text" id="leather" placeholder="Leather Type">
-        <input type="date" id="date">
-        <button class="btn" style="background:#4caf50; color:white;" onclick="saveData()">Save Entry</button>
-        <button class="btn" style="background:#555; color:white;" onclick="goBack()">Back to Home</button>
-        <table id="histTable">
-            <thead><tr><th>Date</th><th>Party</th><th>Leather</th><th>Action</th></tr></thead>
-            <tbody id="data-body"></tbody>
-        </table>
+        <button class="btn" style="background:#4caf50;" onclick="saveData()">Save Entry</button>
+        <button class="btn" style="background:#777;" onclick="goBack()">Back to Home</button>
+        <table id="histTable"><thead><tr><th>Date</th><th>Party</th><th>Leather</th><th>Action</th></tr></thead><tbody id="data-body"></tbody></table>
     </div>
 
     <script>
-        const DB_KEY = 'tannery_v6_data';
+        const DB_KEY = 'tannery_all_data';
         const firebaseConfig = { databaseURL: "https://mizan-khata-default-rtdb.firebaseio.com/" };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
@@ -50,18 +52,20 @@
         let allData = JSON.parse(localStorage.getItem(DB_KEY)) || {};
         let currentDrum = "";
 
-        // Sync from Firebase
+        // Sync with Firebase
         db.ref('tanneryData').on('value', (snapshot) => {
             if (snapshot.exists()) {
                 allData = snapshot.val();
                 localStorage.setItem(DB_KEY, JSON.stringify(allData));
                 renderTable();
+                renderReport();
             }
         });
 
         function openEntry(name) {
             currentDrum = name;
             document.getElementById('drum-title').innerText = name;
+            document.getElementById('date').valueAsDate = new Date();
             document.getElementById('main-screen').classList.remove('active');
             document.getElementById('entry-screen').classList.add('active');
             renderTable();
@@ -74,20 +78,12 @@
 
         function saveData() {
             let id = Date.now().toString();
-            let entry = { 
-                drum: currentDrum, 
-                date: document.getElementById('date').value, 
-                party: document.getElementById('party').value, 
-                leather: document.getElementById('leather').value 
-            };
-            
+            let entry = { drum: currentDrum, date: document.getElementById('date').value, party: document.getElementById('party').value, leather: document.getElementById('leather').value };
             allData[id] = entry;
             db.ref('tanneryData').set(allData);
             localStorage.setItem(DB_KEY, JSON.stringify(allData));
-            
-            document.getElementById('party').value = "";
-            document.getElementById('leather').value = "";
             renderTable();
+            alert("Entry Saved!");
         }
 
         function deleteEntry(id) {
@@ -102,14 +98,19 @@
             body.innerHTML = "";
             for (let id in allData) {
                 if (allData[id].drum === currentDrum) {
-                    body.innerHTML += `<tr>
-                        <td>${allData[id].date}</td>
-                        <td>${allData[id].party}</td>
-                        <td>${allData[id].leather}</td>
-                        <td><button class="del-btn" onclick="deleteEntry('${id}')">X</button></td>
-                    </tr>`;
+                    body.innerHTML += `<tr><td>${allData[id].date}</td><td>${allData[id].party}</td><td>${allData[id].leather}</td><td><button onclick="deleteEntry('${id}')">X</button></td></tr>`;
                 }
             }
+        }
+
+        function renderReport() {
+            let p = document.getElementById('reportSearch').value.toLowerCase();
+            let start = document.getElementById('startDate').value;
+            let end = document.getElementById('endDate').value;
+            let res = Object.values(allData).filter(x => (x.party || "").toLowerCase().includes(p) && (!start || x.date >= start) && (!end || x.date <= end));
+            let html = `<table><thead><tr><th>Date</th><th>Party</th></tr></thead><tbody>`;
+            res.forEach(x => html += `<tr><td>${x.date}</td><td>${x.party}</td></tr>`);
+            document.getElementById('reportResult').innerHTML = html + `</tbody></table>`;
         }
     </script>
 </body>
