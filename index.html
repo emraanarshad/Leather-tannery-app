@@ -61,13 +61,8 @@
 
         window.onload = () => { renderReport(); renderTable(); };
 
-        // Service Worker Registration
         if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js')
-                .then(() => console.log('Service Worker Registered'))
-                .catch(err => console.log('Registration failed:', err));
-            });
+            navigator.serviceWorker.register('./sw.js').catch(err => console.log(err));
         }
 
         db.ref('tanneryData').on('value', (snapshot) => {
@@ -121,7 +116,7 @@
             if(!body) return;
             body.innerHTML = "";
             allData.filter(x => x.drum === currentDrum).forEach(x => {
-                body.innerHTML += `<tr><td>${x.date}</td><td>${x.party}</td><td>${x.leather}</td><td>${x.water}</td><td>${x.details}</td>
+                body.innerHTML += `<tr><td>${x.date||""}</td><td>${x.party||""}</td><td>${x.leather||""}</td><td>${x.water||""}</td><td>${x.details||""}</td>
                 <td><button class="btn-edit" onclick="editItem('${x.id}')"><i class="fa fa-pen"></i></button>
                 <button class="btn-del" onclick="deleteItem('${x.id}')"><i class="fa fa-trash"></i></button></td></tr>`;
             });
@@ -131,9 +126,10 @@
             let p = document.getElementById('reportSearch').value.toLowerCase();
             let start = document.getElementById('startDate').value;
             let end = document.getElementById('endDate').value;
-            let res = allData.filter(x => (x.party || "").toLowerCase().includes(p) && (!start || x.date >= start) && (!end || x.date <= end));
-            let html = `<table><thead><tr><th>Date</th><th>Party</th><th>Leather</th><th>Pani</th><th>Details</th></tr></thead><tbody>`;
-            res.forEach(x => html += `<tr><td>${x.date}</td><td>${x.party}</td><td>${x.leather}</td><td>${x.water}</td><td>${x.details}</td></tr>`);
+            let res = allData.filter(x => (x.party||"").toLowerCase().includes(p) && (!start || x.date >= start) && (!end || x.date <= end));
+            
+            let html = `<table><thead><tr><th>Date</th><th>Party</th><th>Drum</th><th>Leather</th><th>Pani</th><th>Details</th></tr></thead><tbody>`;
+            res.forEach(x => html += `<tr><td>${x.date||""}</td><td>${x.party||""}</td><td>${x.drum||""}</td><td>${x.leather||""}</td><td>${x.water||""}</td><td>${x.details||""}</td></tr>`);
             document.getElementById('reportResult').innerHTML = (p || start || end) ? html + `</tbody></table>` : "";
         }
     </script>
