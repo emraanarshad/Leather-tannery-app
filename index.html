@@ -56,11 +56,9 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
         
-        // Load data from LocalStorage immediately
         let allData = JSON.parse(localStorage.getItem(DB_KEY)) || [];
         let currentDrum = "";
 
-        // UI Refresh
         window.onload = () => { renderReport(); renderTable(); };
 
         db.ref('tanneryData').on('value', (snapshot) => {
@@ -86,10 +84,18 @@
 
         function saveData() {
             let entry = { id: Date.now().toString(), drum: currentDrum, date: document.getElementById('date').value, party: document.getElementById('party').value, leather: document.getElementById('leather').value, water: document.getElementById('water').value, details: document.getElementById('details').value };
+            
             allData.push(entry);
-            localStorage.setItem(DB_KEY, JSON.stringify(allData)); // Save locally
-            db.ref('tanneryData/' + entry.id).set(entry); // Sync to Firebase
-            alert("Saved!");
+            localStorage.setItem(DB_KEY, JSON.stringify(allData));
+            db.ref('tanneryData/' + entry.id).set(entry);
+            
+            // Fields khali karne ke liye:
+            document.getElementById('party').value = "";
+            document.getElementById('leather').value = "";
+            document.getElementById('water').value = "";
+            document.getElementById('details').value = "";
+            document.getElementById('date').valueAsDate = new Date();
+            
             renderTable();
         }
 
