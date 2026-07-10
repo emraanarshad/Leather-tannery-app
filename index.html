@@ -14,9 +14,9 @@
         .report-box { background: #dcedc8; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
         .drum-btn { width: 100%; padding: 20px; margin-bottom: 10px; border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; background: #4caf50; }
         input, textarea { width: 100%; padding: 10px; margin: 5px 0; border: 1px solid #ccc; box-sizing: border-box; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 11px; }
-        th { background: #2e7d32; color: white; padding: 8px; }
-        td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 10px; }
+        th { background: #2e7d32; color: white; padding: 5px; }
+        td { border: 1px solid #ddd; padding: 5px; text-align: center; }
         .btn-edit { background: #ffca28; border: none; padding: 5px; cursor: pointer; }
         .btn-del { background: #e53935; color: white; border: none; padding: 5px; cursor: pointer; }
     </style>
@@ -81,7 +81,6 @@
         function saveData() {
             let entry = { drum: currentDrum, date: document.getElementById('date').value, party: document.getElementById('party').value, leather: document.getElementById('leather').value, water: document.getElementById('water').value, details: document.getElementById('details').value };
             db.ref('tanneryData').push(entry);
-            // Fields clear karna
             document.getElementById('party').value = ""; document.getElementById('leather').value = ""; document.getElementById('water').value = ""; document.getElementById('details').value = "";
         }
 
@@ -107,8 +106,11 @@
             let start = document.getElementById('startDate').value;
             let end = document.getElementById('endDate').value;
             let res = allData.filter(x => x.party && x.party.toLowerCase().includes(p) && (!start || x.date >= start) && (!end || x.date <= end));
-            let html = `<table id="repTable"><thead><tr><th>Date</th><th>Party</th><th>Drum</th></tr></thead><tbody>`;
-            res.forEach(x => html += `<tr><td>${x.date}</td><td>${x.party}</td><td>${x.drum}</td></tr>`);
+            
+            // Yahan naye columns add kar diye hain
+            let html = `<table id="repTable"><thead><tr><th>Date</th><th>Party</th><th>Drum</th><th>Leather</th><th>Pani</th><th>Details</th></tr></thead><tbody>`;
+            res.forEach(x => html += `<tr><td>${x.date}</td><td>${x.party}</td><td>${x.drum}</td><td>${x.leather}</td><td>${x.water}</td><td>${x.details}</td></tr>`);
+            
             document.getElementById('reportResult').innerHTML = (p || start || end) ? html + `</tbody></table>` : "";
         }
     </script>
