@@ -8,15 +8,15 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-database-compat.js"></script>
     <style>
-        body { font-family: sans-serif; padding: 10px; background: #fff; }
+        body { font-family: sans-serif; padding: 10px; }
         .screen { display: none; } .active { display: block; }
         .report-box { background: #e8f5e9; padding: 10px; border-radius: 8px; margin-bottom: 10px; }
         .drum-btn { width: 100%; padding: 15px; margin: 5px 0; border: none; border-radius: 5px; color: white; font-weight: bold; background: #2e7d32; }
-        input, textarea { width: 100%; padding: 10px; margin: 5px 0; border: 1px solid #ccc; box-sizing: border-box; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 11px; }
-        th, td { border: 1px solid #999; padding: 5px; text-align: center; }
-        .btn-edit { background: #ffca28; border: none; padding: 5px; margin-right: 5px; cursor: pointer; }
-        .btn-del { background: #e53935; color: white; border: none; padding: 5px; cursor: pointer; }
+        input, textarea { width: 100%; padding: 8px; margin: 3px 0; border: 1px solid #ccc; box-sizing: border-box; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 10px; }
+        th, td { border: 1px solid #999; padding: 4px; text-align: center; }
+        .btn-edit { background: #ffca28; border: none; padding: 3px; margin-right: 3px; }
+        .btn-del { background: #e53935; color: white; border: none; padding: 3px; }
     </style>
 </head>
 <body>
@@ -43,10 +43,10 @@
         <input type="text" id="party" placeholder="Party Name">
         <input type="text" id="leather" placeholder="Leather Type">
         <input type="text" id="water" placeholder="Billo Pani">
-        <textarea id="details" placeholder="Chemicals Detail"></textarea>
+        <textarea id="details" placeholder="Details"></textarea>
         <input type="date" id="date">
-        <button onclick="saveData()" style="width:100%; padding:12px; background:#2e7d32; color:white; border:none;">Save</button>
-        <button onclick="goBack()" style="width:100%; padding:12px; margin-top:5px;">Wapas</button>
+        <button onclick="saveData()" style="width:100%; padding:10px; background:#2e7d32; color:white; border:none;">Save Entry</button>
+        <button onclick="goBack()" style="width:100%; padding:10px; margin-top:5px;">Wapas</button>
         <table id="histTable"><thead><tr><th>Date</th><th>Party</th><th>Leather</th><th>Pani</th><th>Details</th><th>Act</th></tr></thead><tbody id="data-body"></tbody></table>
     </div>
 
@@ -55,6 +55,7 @@
         const firebaseConfig = { databaseURL: "https://mizan-khata-default-rtdb.firebaseio.com/" };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
+        // Offline Persistence
         try { firebase.database().enablePersistence(); } catch (e) {}
 
         let currentDrum = "";
@@ -81,6 +82,7 @@
         function saveData() {
             let entry = { drum: currentDrum, date: document.getElementById('date').value, party: document.getElementById('party').value, leather: document.getElementById('leather').value, water: document.getElementById('water').value, details: document.getElementById('details').value };
             db.ref('tanneryData').push(entry);
+            // Form clear
             document.getElementById('party').value = ""; document.getElementById('leather').value = ""; document.getElementById('water').value = ""; document.getElementById('details').value = "";
         }
 
@@ -106,8 +108,8 @@
             let start = document.getElementById('startDate').value;
             let end = document.getElementById('endDate').value;
             let res = allData.filter(x => (x.party || "").toLowerCase().includes(p) && (!start || x.date >= start) && (!end || x.date <= end));
-            let html = `<table><thead><tr><th>Date</th><th>Party</th><th>Pani</th><th>Details</th></tr></thead><tbody>`;
-            res.forEach(x => html += `<tr><td>${x.date}</td><td>${x.party}</td><td>${x.water}</td><td>${x.details}</td></tr>`);
+            let html = `<table><thead><tr><th>Date</th><th>Party</th><th>Leather</th><th>Pani</th><th>Details</th></tr></thead><tbody>`;
+            res.forEach(x => html += `<tr><td>${x.date}</td><td>${x.party}</td><td>${x.leather}</td><td>${x.water}</td><td>${x.details}</td></tr>`);
             document.getElementById('reportResult').innerHTML = (p || start || end) ? html + `</tbody></table>` : "";
         }
     </script>
