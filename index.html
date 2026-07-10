@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tannery App Complete</title>
+    <title>Tannery App Offline</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-database-compat.js"></script>
@@ -15,7 +15,7 @@
         input, textarea { width: 100%; padding: 8px; margin: 3px 0; border: 1px solid #ccc; box-sizing: border-box; }
         table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 10px; }
         th, td { border: 1px solid #999; padding: 4px; text-align: center; }
-        .btn-edit { background: #ffca28; border: none; padding: 5px; margin-right: 3px; cursor: pointer; }
+        .btn-edit { background: #ffca28; border: none; padding: 5px; cursor: pointer; }
         .btn-del { background: #e53935; color: white; border: none; padding: 5px; cursor: pointer; }
     </style>
 </head>
@@ -25,8 +25,8 @@
         <h3>TANNERY DRUMS</h3>
         <div class="report-box">
             <input type="text" id="reportSearch" placeholder="Search Party..." oninput="renderReport()">
-            <input type="date" id="startDate" onchange="renderReport()">
-            <input type="date" id="endDate" onchange="renderReport()">
+            <label>Start:</label><input type="date" id="startDate" onchange="renderReport()">
+            <label>End:</label><input type="date" id="endDate" onchange="renderReport()">
             <div id="reportResult"></div>
             <button onclick="window.print()" style="width:100%; padding:10px; background:#2196f3; color:white; border:none; margin-top:5px;">Print Report</button>
         </div>
@@ -51,21 +51,26 @@
     </div>
 
     <script>
-        const DB_KEY = 'tannery_all_data_final';
+        const DB_KEY = 'tannery_local_data';
         const firebaseConfig = { databaseURL: "https://mizan-khata-default-rtdb.firebaseio.com/" };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
         
-        let currentDrum = "";
+        // Load data from LocalStorage immediately
         let allData = JSON.parse(localStorage.getItem(DB_KEY)) || [];
+        let currentDrum = "";
 
-        // Data sync
+        // UI Refresh
+        window.onload = () => { renderReport(); renderTable(); };
+
         db.ref('tanneryData').on('value', (snapshot) => {
-            allData = [];
-            snapshot.forEach((child) => { allData.push({ id: child.key, ...child.val() }); });
-            localStorage.setItem(DB_KEY, JSON.stringify(allData));
-            renderReport();
-            renderTable();
+            if (snapshot.exists()) {
+                allData = [];
+                snapshot.forEach((child) => { allData.push({ id: child.key, ...child.val() }); });
+                localStorage.setItem(DB_KEY, JSON.stringify(allData));
+                renderReport();
+                renderTable();
+            }
         });
 
         function openEntry(name) {
@@ -80,9 +85,12 @@
         function goBack() { document.getElementById('main-screen').classList.add('active'); document.getElementById('entry-screen').classList.remove('active'); }
 
         function saveData() {
-            let entry = { drum: currentDrum, date: document.getElementById('date').value, party: document.getElementById('party').value, leather: document.getElementById('leather').value, water: document.getElementById('water').value, details: document.getElementById('details').value };
-            db.ref('tanneryData').push(entry);
-            document.getElementById('party').value = ""; document.getElementById('leather').value = ""; document.getElementById('water').value = ""; document.getElementById('details').value = "";
+            let entry = { id: Date.now().toString(), drum: currentDrum, date: document.getElementById('date').value, party: document.getElementById('party').value, leather: document.getElementById('leather').value, water: document.getElementById('water').value, details: document.getElementById('details').value };
+            allData.push(entry);
+            localStorage.setItem(DB_KEY, JSON.stringify(allData)); // Save locally
+            db.ref('tanneryData/' + entry.id).set(entry); // Sync to Firebase
+            alert("Saved!");
+            renderTable();
         }
 
         function editItem(id) {
@@ -90,7 +98,15 @@
             document.getElementById('party').value = item.party; document.getElementById('leather').value = item.leather;
             document.getElementById('water').value = item.water; document.getElementById('details').value = item.details;
             document.getElementById('date').value = item.date;
+            deleteItem(id);
+        }
+
+        function deleteItem(id) {
+            allData = allData.filter(x => x.id !== id);
+            localStorage.setItem(DB_KEY, JSON.stringify(allData));
             db.ref('tanneryData/' + id).remove();
+            renderTable();
+            renderReport();
         }
 
         function renderTable() {
@@ -100,7 +116,7 @@
             allData.filter(x => x.drum === currentDrum).forEach(x => {
                 body.innerHTML += `<tr><td>${x.date}</td><td>${x.party}</td><td>${x.leather}</td><td>${x.water}</td><td>${x.details}</td>
                 <td><button class="btn-edit" onclick="editItem('${x.id}')"><i class="fa fa-pen"></i></button>
-                <button class="btn-del" onclick="db.ref('tanneryData/${x.id}').remove()"><i class="fa fa-trash"></i></button></td></tr>`;
+                <button class="btn-del" onclick="deleteItem('${x.id}')"><i class="fa fa-trash"></i></button></td></tr>`;
             });
         }
 
