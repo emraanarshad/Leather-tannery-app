@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tannery App</title>
+    <title>Tannery App V2</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-database-compat.js"></script>
@@ -25,10 +25,12 @@
         <h3>TANNERY DRUMS</h3>
         <div class="report-box">
             <input type="text" id="reportSearch" placeholder="Search Party..." oninput="renderReport()">
+            <label>Start Date:</label>
             <input type="date" id="startDate" onchange="renderReport()">
+            <label>End Date:</label>
             <input type="date" id="endDate" onchange="renderReport()">
             <div id="reportResult"></div>
-            <button onclick="window.print()" style="width:100%; padding:10px; background:#2196f3; color:white; border:none;">Print Report</button>
+            <button onclick="window.print()" style="width:100%; padding:10px; background:#2196f3; color:white; border:none; margin-top:5px;">Print Report</button>
         </div>
         <button class="drum-btn" onclick="openEntry('Drum 1 M')">Drum 1 M</button>
         <button class="drum-btn" onclick="openEntry('Drum 2 M')">Drum 2 M</button>
@@ -51,12 +53,9 @@
     </div>
 
     <script>
-        if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js'); }
         const firebaseConfig = { databaseURL: "https://mizan-khata-default-rtdb.firebaseio.com/" };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
-        // Offline Persistence
-        try { firebase.database().enablePersistence(); } catch (e) {}
 
         let currentDrum = "";
         let allData = [];
@@ -82,7 +81,6 @@
         function saveData() {
             let entry = { drum: currentDrum, date: document.getElementById('date').value, party: document.getElementById('party').value, leather: document.getElementById('leather').value, water: document.getElementById('water').value, details: document.getElementById('details').value };
             db.ref('tanneryData').push(entry);
-            // Form clear
             document.getElementById('party').value = ""; document.getElementById('leather').value = ""; document.getElementById('water').value = ""; document.getElementById('details').value = "";
         }
 
