@@ -2,114 +2,78 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tannery App</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <title>Tannery Online</title>
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-database-compat.js"></script>
     <style>
-        body { font-family: sans-serif; padding: 10px; background: #fdfdfd; }
+        body { font-family: sans-serif; padding: 10px; }
         .screen { display: none; } .active { display: block; }
-        .report-box { background: #dcedc8; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
-        .drum-btn { width: 100%; padding: 20px; margin-bottom: 10px; border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; background: #4caf50; }
-        input, textarea { width: 100%; padding: 10px; margin: 5px 0; border: 1px solid #ccc; box-sizing: border-box; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 11px; }
-        th { background: #2e7d32; color: white; padding: 8px; }
-        td { border: 1px solid #ddd; padding: 8px; text-align: center; }
-        .btn-edit { background: #ffca28; border: none; padding: 5px; cursor: pointer; }
-        .btn-del { background: #e53935; color: white; border: none; padding: 5px; cursor: pointer; }
+        input, textarea { width: 100%; padding: 10px; margin: 5px 0; box-sizing: border-box; }
+        .drum-btn { width: 100%; padding: 20px; margin-bottom: 10px; background: #4caf50; color: white; border: none; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
     </style>
 </head>
 <body>
 
-    <!-- Main Screen -->
-    <div id="main-screen" class="screen active">
-        <h3>TANNERY DRUMS</h3>
-        <div class="report-box">
-            <label>Party Drum Detail Report:</label>
-            <input type="text" id="reportSearch" placeholder="Party name..." oninput="showReport()">
-            <label>Start Date:</label> <input type="date" id="startDate" onchange="showReport()">
-            <label>End Date:</label> <input type="date" id="endDate" onchange="showReport()">
-            <div id="reportResult"></div>
-        </div>
-        <button class="drum-btn" onclick="openEntry('Drum 1 M')">Drum 1 M</button>
-        <button class="drum-btn" onclick="openEntry('Drum 2 M')">Drum 2 M</button>
-        <button class="drum-btn" onclick="openEntry('Drum 3 M')">Drum 3 M</button>
-        <button class="drum-btn" onclick="openEntry('Drum 4 L (Large)')">Drum 4 L (Large)</button>
-        <button class="drum-btn" onclick="openEntry('Drum 5 L (Large)')">Drum 5 L (Large)</button>
-        <button class="drum-btn" style="background:#ff9800" onclick="openEntry('Drum 6 Outside')">Drum 6 Outside</button>
-    </div>
+<div id="main-screen" class="screen active">
+    <h3>TANNERY DRUMS</h3>
+    <button class="drum-btn" onclick="openEntry('Drum 1')">Drum 1</button>
+    <button class="drum-btn" onclick="openEntry('Drum 2')">Drum 2</button>
+</div>
 
-    <!-- Entry Screen -->
-    <div id="entry-screen" class="screen">
-        <h3 id="drum-title"></h3>
-        <input type="text" id="party" placeholder="Party Name">
-        <input type="text" id="leather" placeholder="Leather Type">
-        <input type="text" id="water" placeholder="Billo Pani (Amount)">
-        <textarea id="details" placeholder="Chemicals Detail"></textarea>
-        <input type="date" id="date">
-        <button onclick="saveData()" style="width:100%; padding:12px; background:#2e7d32; color:white; border:none;">Save Karein</button>
-        <button onclick="goBack()" style="width:100%; padding:12px; margin-top:5px;">Wapas</button>
-        <table id="histTable"><thead><tr><th>Date</th><th>Party</th><th>Leather</th><th>Pani</th><th>Details</th><th>Action</th></tr></thead><tbody id="data-body"></tbody></table>
-    </div>
+<div id="entry-screen" class="screen">
+    <h3 id="drum-title"></h3>
+    <input type="text" id="party" placeholder="Party Name">
+    <input type="text" id="leather" placeholder="Leather">
+    <textarea id="details" placeholder="Chemicals"></textarea>
+    <button onclick="saveData()" style="padding:15px; width:100%; background:blue; color:white;">Save Online</button>
+    <button onclick="goBack()" style="padding:15px; width:100%; margin-top:10px;">Back</button>
+    <table><thead><tr><th>Party</th><th>Leather</th><th>Action</th></tr></thead><tbody id="data-body"></tbody></table>
+</div>
 
-    <script>
-        let data = JSON.parse(localStorage.getItem('tanneryData')) || [];
-        let currentDrum = "";
+<script>
+    const firebaseConfig = {
+        databaseURL: "https://mizan-khata-default-rtdb.firebaseio.com/"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    let currentDrum = "";
 
-        function openEntry(name) {
-            currentDrum = name;
-            document.getElementById('drum-title').innerText = name;
-            document.getElementById('date').valueAsDate = new Date();
-            document.getElementById('main-screen').classList.remove('active');
-            document.getElementById('entry-screen').classList.add('active');
-            renderTable();
-        }
+    function openEntry(name) {
+        currentDrum = name;
+        document.getElementById('drum-title').innerText = name;
+        document.getElementById('main-screen').classList.remove('active');
+        document.getElementById('entry-screen').classList.add('active');
+        fetchData();
+    }
 
-        function goBack() { document.getElementById('main-screen').classList.add('active'); document.getElementById('entry-screen').classList.remove('active'); }
+    function goBack() { document.getElementById('main-screen').classList.add('active'); document.getElementById('entry-screen').classList.remove('active'); }
 
-        function saveData() {
-            data.push({ id: Date.now(), drum: currentDrum, date: document.getElementById('date').value, party: document.getElementById('party').value, leather: document.getElementById('leather').value, water: document.getElementById('water').value, details: document.getElementById('details').value });
-            localStorage.setItem('tanneryData', JSON.stringify(data));
-            document.getElementById('party').value = ""; document.getElementById('leather').value = ""; document.getElementById('water').value = ""; document.getElementById('details').value = "";
-            renderTable();
-        }
+    function saveData() {
+        let entry = {
+            party: document.getElementById('party').value,
+            leather: document.getElementById('leather').value,
+            details: document.getElementById('details').value
+        };
+        // 'tanneryData' naam ka folder banayega database mein
+        db.ref('tanneryData/' + currentDrum).push(entry).then(() => {
+            alert("Save ho gaya!");
+            document.getElementById('party').value = "";
+        });
+    }
 
-        function renderTable() {
+    function fetchData() {
+        db.ref('tanneryData/' + currentDrum).on('value', (snapshot) => {
             let body = document.getElementById('data-body');
             body.innerHTML = "";
-            data.filter(x => x.drum === currentDrum).forEach(x => {
-                body.innerHTML += `<tr><td>${x.date}</td><td>${x.party}</td><td>${x.leather}</td><td>${x.water}</td><td>${x.details}</td><td><button class="btn-edit" onclick="editItem(${x.id})"><i class="fa fa-pen"></i></button> <button class="btn-del" onclick="deleteItem(${x.id})"><i class="fa fa-trash"></i></button></td></tr>`;
+            snapshot.forEach((child) => {
+                let x = child.val();
+                body.innerHTML += `<tr><td>${x.party}</td><td>${x.leather}</td><td>Saved</td></tr>`;
             });
-        }
-
-        function editItem(id) {
-            let item = data.find(x => x.id === id);
-            document.getElementById('party').value = item.party; document.getElementById('leather').value = item.leather;
-            document.getElementById('water').value = item.water; document.getElementById('details').value = item.details;
-            document.getElementById('date').value = item.date;
-            deleteItem(id);
-        }
-
-        function deleteItem(id) { data = data.filter(x => x.id !== id); localStorage.setItem('tanneryData', JSON.stringify(data)); renderTable(); showReport(); }
-
-        function showReport() {
-            let p = document.getElementById('reportSearch').value.toLowerCase();
-            let start = document.getElementById('startDate').value;
-            let end = document.getElementById('endDate').value;
-            let res = data.filter(x => x.party.toLowerCase().includes(p) && (!start || x.date >= start) && (!end || x.date <= end));
-            
-            let html = `<table id="repTable"><thead><tr><th>Date</th><th>Party</th><th>Drum</th></tr></thead><tbody>`;
-            res.forEach(x => html += `<tr><td>${x.date}</td><td>${x.party}</td><td>${x.drum}</td></tr>`);
-            html += `</tbody></table><button onclick="downloadPDF()" style="width:100%; margin-top:10px; background:#d32f2f; color:white; border:none; padding:10px;">Download Report PDF</button>`;
-            document.getElementById('reportResult').innerHTML = p || (start && end) ? html : "";
-        }
-
-        function downloadPDF() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            doc.text("Party Report", 10, 10);
-            doc.html(document.getElementById('repTable'), { callback: function (doc) { doc.save('Report.pdf'); }, x: 10, y: 20 });
-        }
-    </script>
+        });
+    }
+</script>
 </body>
 </html>
