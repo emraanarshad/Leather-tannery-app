@@ -1,4 +1,4 @@
-const cacheName = 'tannery-app-v1';
+const cacheName = 'tannery-app-v2';
 const assets = ['/', '/index.html', '/index.html'];
 
 self.addEventListener('install', (e) => {
