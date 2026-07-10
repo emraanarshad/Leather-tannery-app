@@ -17,6 +17,7 @@
         th { background: #2e7d32; color: white; padding: 5px; }
         td { border: 1px solid #ddd; padding: 5px; text-align: center; }
         .btn-del { background: #e53935; color: white; border: none; padding: 5px; cursor: pointer; }
+        @media print { #main-screen > *:not(.report-box) { display: none !important; } .drum-btn, button { display: none !important; } }
     </style>
 </head>
 <body>
@@ -24,8 +25,12 @@
     <div id="main-screen" class="screen active">
         <h3>TANNERY DRUMS</h3>
         <div class="report-box">
-            <label>Search Party Report:</label>
-            <input type="text" id="reportSearch" placeholder="Party name..." oninput="renderReport()">
+            <label>Party Name:</label>
+            <input type="text" id="reportSearch" placeholder="Search..." oninput="renderReport()">
+            <label>Start Date:</label>
+            <input type="date" id="startDate" onchange="renderReport()">
+            <label>End Date:</label>
+            <input type="date" id="endDate" onchange="renderReport()">
             <div id="reportResult"></div>
             <button onclick="window.print()" style="margin-top:10px; padding:10px; width:100%; background:#007bff; color:white; border:none;">Print / Save as PDF</button>
         </div>
@@ -92,10 +97,12 @@
 
         function renderReport() {
             let p = document.getElementById('reportSearch').value.toLowerCase();
-            let res = allData.filter(x => (x.party || "").toLowerCase().includes(p));
+            let start = document.getElementById('startDate').value;
+            let end = document.getElementById('endDate').value;
+            let res = allData.filter(x => (x.party || "").toLowerCase().includes(p) && (!start || x.date >= start) && (!end || x.date <= end));
             let html = `<table><thead><tr><th>Date</th><th>Party</th><th>Drum</th><th>Details</th></tr></thead><tbody>`;
             res.forEach(x => html += `<tr><td>${x.date}</td><td>${x.party}</td><td>${x.drum}</td><td>${x.details}</td></tr>`);
-            document.getElementById('reportResult').innerHTML = (p) ? html + `</tbody></table>` : "";
+            document.getElementById('reportResult').innerHTML = (p || start || end) ? html + `</tbody></table>` : "";
         }
     </script>
 </body>
