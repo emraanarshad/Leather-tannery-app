@@ -56,12 +56,10 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
         
-        // Sabse pehle local data load karein
         let allData = JSON.parse(localStorage.getItem(DB_KEY)) || [];
         let currentDrum = "";
 
         window.onload = () => { 
-            // Sirf ek baar firebase se sync karein
             if (navigator.onLine) {
                 db.ref('tanneryData').once('value', (snapshot) => {
                     if (snapshot.exists()) {
@@ -69,11 +67,11 @@
                         snapshot.forEach((child) => { fData.push({ id: child.key, ...child.val() }); });
                         allData = fData;
                         localStorage.setItem(DB_KEY, JSON.stringify(allData));
-                        renderReport(); renderTable();
+                        renderTable(); renderReport();
                     }
                 });
             }
-            renderReport(); renderTable(); 
+            renderTable(); renderReport(); 
         };
 
         function openEntry(name) {
@@ -91,10 +89,7 @@
             let entry = { id: Date.now().toString(), drum: currentDrum, date: document.getElementById('date').value, party: document.getElementById('party').value, leather: document.getElementById('leather').value, water: document.getElementById('water').value, details: document.getElementById('details').value };
             allData.push(entry);
             localStorage.setItem(DB_KEY, JSON.stringify(allData));
-            
-            // Firebase mein push karein
             if (navigator.onLine) db.ref('tanneryData/' + entry.id).set(entry);
-            
             document.getElementById('party').value = ""; document.getElementById('leather').value = ""; document.getElementById('water').value = ""; document.getElementById('details').value = ""; document.getElementById('date').valueAsDate = new Date();
             renderTable();
         }
@@ -117,7 +112,9 @@
         function renderTable() {
             let body = document.getElementById('data-body');
             if(!body) return; body.innerHTML = "";
-            allData.filter(x => x.drum === currentDrum).forEach(x => {
+            allData.filter(x => x.drum === currentDrum)
+                   .sort((a, b) => new Date(b.date) - new Date(a.date))
+                   .forEach(x => {
                 body.innerHTML += `<tr><td>${x.date||""}</td><td>${x.party||""}</td><td>${x.leather||""}</td><td>${x.water||""}</td><td>${x.details||""}</td>
                 <td><button class="btn-edit" onclick="editItem('${x.id}')"><i class="fa fa-pen"></i></button>
                 <button class="btn-del" onclick="deleteItem('${x.id}')"><i class="fa fa-trash"></i></button></td></tr>`;
@@ -128,7 +125,8 @@
             let p = document.getElementById('reportSearch').value.toLowerCase();
             let start = document.getElementById('startDate').value;
             let end = document.getElementById('endDate').value;
-            let res = allData.filter(x => (x.party||"").toLowerCase().includes(p) && (!start || x.date >= start) && (!end || x.date <= end));
+            let res = allData.filter(x => (x.party||"").toLowerCase().includes(p) && (!start || x.date >= start) && (!end || x.date <= end))
+                             .sort((a, b) => new Date(a.date) - new Date(b.date));
             let html = `<table><thead><tr><th>Date</th><th>Party</th><th>Drum</th><th>Leather</th><th>Pani</th><th>Details</th></tr></thead><tbody>`;
             res.forEach(x => html += `<tr><td>${x.date||""}</td><td>${x.party||""}</td><td>${x.drum||""}</td><td>${x.leather||""}</td><td>${x.water||""}</td><td>${x.details||""}</td></tr>`);
             document.getElementById('reportResult').innerHTML = (p || start || end) ? html + `</tbody></table>` : "";
