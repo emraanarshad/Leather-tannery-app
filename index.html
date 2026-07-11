@@ -17,6 +17,13 @@
         th, td { border: 1px solid #999; padding: 4px; text-align: center; }
         .btn-edit { background: #ffca28; border: none; padding: 5px; cursor: pointer; }
         .btn-del { background: #e53935; color: white; border: none; padding: 5px; cursor: pointer; }
+
+        /* Print optimization: Sirf report print hogi */
+        @media print {
+            body * { visibility: hidden; }
+            #reportResult, #reportResult * { visibility: visible; }
+            #reportResult { position: absolute; left: 0; top: 0; width: 100%; }
+        }
     </style>
 </head>
 <body>
